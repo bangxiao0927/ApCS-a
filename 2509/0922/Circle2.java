@@ -19,18 +19,18 @@ public class Circle2 {
         System.out.println("The area of the circle is: " + area);
     }
 
-    public void printArea(double r) {
-        double area = pi * r * r;
+    public void printArea(double radius) {
+        double area = pi * radius * radius;
         System.out.println("The area of the circle is: " + area);
     }
 
-    public void printVol(double r) {
-        double vol = pi * r * r * r * 1/3.0;
+    public void printVol(double radius) {
+        double vol = pi * radius * radius * radius * 1/3.0;
         System.out.println("The volume of the sphere is: " + vol);
     }
 
-    public void printVol(double r,double height) {
-        double vol = pi * r * r * height;
+    public void printVol(double radius,double height) {
+        double vol = pi * radius * radius * height;
         System.out.println("The volume of the cylinder is: " + vol);
     }
 }
