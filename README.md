@@ -1,0 +1,7 @@
+This is the personal codes for the class of Ap Computer Science A
+
+Please DO NOT COPY OUT FROM THIS !!!
+
+THIS IS FOR THE PURPOSE FOR STORAGE AS WELL AS COMMUNICATION OR AS REFERENCE
+
+HOPE THIS WILL HELP YALL :)
