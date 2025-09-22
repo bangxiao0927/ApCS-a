@@ -4,7 +4,7 @@ public class Circle2 {
 
     public Circle2() {
         this.pi = 3.14;
-        this.radius = 0;
+        this.radius = 1;
     }
 
     public Circle2(double r) {
