@@ -15,13 +15,39 @@ public class Profile {
         this.food = food;
     }
 
+    public void updateProfile(String name, int age, String subject, String hobby, String food) {
+        this.name = name;
+        this.age = age;
+        this.subject = subject;
+        this.hobby = hobby;
+        this.food = food;
+    }
+
     public void printInfo() {
-        printCareer();
+        System.out.println("=====================");
         System.out.println("Name: " + name);
         System.out.println("Age: " + age);
         System.out.println("Favorite Subject: " + subject);
         System.out.println("Hobby: " + hobby);
         System.out.println("Favorite Food: " + food);
+        printCareer();
+    }
+
+    //my creative things
+    public String getName() {
+        return name;
+    }
+    public int getAge() {
+        return age;
+    }
+    public String getSubject() {
+        return subject;
+    }
+    public String getHobby() {
+        return hobby;
+    }
+    public String getFood() {
+        return food;
     }
 
     public void printCareer() {
@@ -106,14 +132,6 @@ public class Profile {
         else {
             System.out.println("Career: Unemployed");
         }
-    }
-
-    public void updateProfile(String name, int age, String subject, String hobby, String food) {
-        this.name = name;
-        this.age = age;
-        this.subject = subject;
-        this.hobby = hobby;
-        this.food = food;
     }
 }
 
