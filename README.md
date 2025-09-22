@@ -1,6 +1,5 @@
-============================================================================
 This is the personal codes for the class of Ap Computer Science A
-
+============================================================================
 Please DO NOT copy out from THIS !!!
 The author do not responsible for other people's Academic Dishonesty
 
