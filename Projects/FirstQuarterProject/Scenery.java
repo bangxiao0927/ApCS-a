@@ -5,25 +5,27 @@ import javax.swing.JPanel;
 
 public class Scenery extends JPanel {
     // instance variables
-    private String dayOrNight;
-    private String weather;
-    private int width;
-    private int height;
-    private int groundHeight;
-    private int minScale;
+    private final String dayOrNight;
+    private final String weather;
+    private final int width;
+    private final int height;
+    private final int minScale;
+    private final int groundHeight;
+    //final is just to make sure the variable won't be changed after initialized
 
     // constructor
     public Scenery(String dayOrNight, String weather, int width, int height) {
         this.dayOrNight = dayOrNight;
         this.weather = weather;
-        if(width <= 1920) {this.width = width;} else {this.width = 1920;}
-        if(height <= 1080) {this.height = height;} else {this.height = 1080;}
+        if(width <= 1920) {this.width = width;} else {this.width = 1920;} // max width 1920
+        if(height <= 1080) {this.height = height;} else {this.height = 1080;} // max height 1080
         this.minScale = Math.min(this.width, this.height);
+        this.groundHeight = this.height / 5 * 4;
     }
 
     @Override
     public Dimension getPreferredSize() {
-        return new Dimension(width, height);
+        return new Dimension(this.width, this.height);
     }
 
     // Paint component methods
@@ -46,7 +48,7 @@ public class Scenery extends JPanel {
         if (weather.equals("sunny") && dayOrNight.equals("day")) {
             Color lightYellow = new Color(255, 255, 153);
             g.setColor(lightYellow);
-            g.fillOval(0, 0, minScale / 4, minScale / 4);
+            g.fillOval(0, 0, this.minScale / 4, this.minScale / 4);
         }
         else if (weather.equals("cloudy")) {
             drawClouds(g);
@@ -67,9 +69,9 @@ public class Scenery extends JPanel {
         int randomY;
         int randomAmount = (int)(Math.random() * (9 - 3 + 1)) + 3;
         for(int i = 0;i < randomAmount;i++) {
-            randomX = (int)(Math.random() * (width - minScale / 4));
-            randomY = (int)(Math.random() * (height / 2 - minScale / 8));
-            g.fillOval(randomX, randomY, minScale / 5, minScale / 10);
+            randomX = (int)(Math.random() * (this.width - this.minScale / 4));
+            randomY = (int)(Math.random() * (this.height / 2 - this.minScale / 8));
+            g.fillOval(randomX, randomY, this.minScale / 5, this.minScale / 10);
         }
     }
 
@@ -80,16 +82,15 @@ public class Scenery extends JPanel {
         int randomY;
         int randomAmount = (int)(Math.random() * (100 - 50 + 1)) + 50;
         for(int i = 0;i < randomAmount;i++) {
-            randomX = (int)(Math.random() * width);
-            randomY = (int)(Math.random() * height);
-            g.drawLine(randomX, randomY, randomX - (minScale / 11), randomY + (minScale / 12) * 3);
+            randomX = (int)(Math.random() * this.width);
+            randomY = (int)(Math.random() * this.height);
+            g.drawLine(randomX, randomY, randomX - (this.minScale / 11), randomY + (this.minScale / 12) * 3);
         }
     }
 
-    private void drawGround(Graphics g,int height) {
-        this.groundHeight = height;
+    private void drawGround(Graphics g) {
         g.setColor(Color.GRAY);
-        g.fillRect(0, height, width, this.height);
+        g.fillRect(0, this.groundHeight, this.width, this.height);
     }
 
     private void drawBuildings(Graphics g) {
@@ -148,12 +149,12 @@ public class Scenery extends JPanel {
 
     //main: Shanghai pearl tower
 
-    private void drawPearlTower(Graphics g, int xPosition, int groundY) {
+    private void drawPearlTower(Graphics g, int xPosition) {
         Color purplePink = new Color(204, 0, 102);
         //big ball size
         int bigSphereDiameter = this.width / 8;
         int bigSphereX = xPosition - bigSphereDiameter / 2;
-        int bigSphereY = groundY - bigSphereDiameter;
+        int bigSphereY = this.groundHeight - bigSphereDiameter;
 
         // small ball size
         int smallSphereDiameter = this.width / 12;
@@ -163,14 +164,14 @@ public class Scenery extends JPanel {
         //feet
         g.setColor(Color.DARK_GRAY);
         for(int i = 0;i < 75;i++) {
-            g.drawLine(xPosition - bigSphereDiameter / 2 - i, groundY, xPosition, bigSphereY);
-            g.drawLine(xPosition + bigSphereDiameter / 2 + i, groundY, xPosition, bigSphereY);
+            g.drawLine(xPosition - bigSphereDiameter / 2 - i, this.groundHeight, xPosition, bigSphereY);
+            g.drawLine(xPosition + bigSphereDiameter / 2 + i, this.groundHeight, xPosition, bigSphereY);
         }
 
         // body
         g.setColor(Color.DARK_GRAY);
-        g.fillRect(xPosition - smallSphereDiameter / 8 * 2, smallSphereY + smallSphereDiameter / 8, smallSphereDiameter/10, groundY - (smallSphereY + smallSphereDiameter / 8) - this.height / 20);
-        g.fillRect(xPosition + smallSphereDiameter / 8, smallSphereY + smallSphereDiameter / 8, smallSphereDiameter/10, groundY - (smallSphereY + smallSphereDiameter / 8) - this.height / 20);
+        g.fillRect(xPosition - smallSphereDiameter / 8 * 2, smallSphereY + smallSphereDiameter / 8, smallSphereDiameter/10, this.groundHeight - (smallSphereY + smallSphereDiameter / 8) - this.height / 20);
+        g.fillRect(xPosition + smallSphereDiameter / 8, smallSphereY + smallSphereDiameter / 8, smallSphereDiameter/10, this.groundHeight - (smallSphereY + smallSphereDiameter / 8) - this.height / 20);
 
         // horizontal sub body
         g.drawLine(xPosition - smallSphereDiameter / 8 * 2, (smallSphereY + bigSphereY) / 2 + smallSphereDiameter/2, smallSphereX + smallSphereDiameter/8 * 5, (smallSphereY + bigSphereY) / 2 + smallSphereDiameter/2);
@@ -216,7 +217,7 @@ public class Scenery extends JPanel {
 
     // draw cars
     private void drawCars(Graphics g) {
-        int carCount = 4;
+        int carCount = (int)(Math.random() * (8 - 4 + 1)) + 4;
         int carWidth = this.width / 12;
         int carHeight = this.height / 15;
 
@@ -263,20 +264,25 @@ public class Scenery extends JPanel {
     }
 
     //draw lamps
-    private void drawLamps(Graphics g,int xPosition) {
+    private void drawLamps(Graphics g,int amount) {
         int lampHeight = this.height / 8;
         int lampY = this.groundHeight - lampHeight;
         int lampLightRadius = this.width / 80;
         int lampLightY = lampY - lampLightRadius / 2;
         int lampCapHeight = lampHeight / 10;  
+        int randomXPosition;
 
-        g.setColor(Color.DARK_GRAY);
-        g.fillRect(xPosition, lampY, this.width / 80, lampHeight); // x, y, width, height
+        for(int i = 0;i < amount;i++) {
+            randomXPosition = (int)(Math.random() * (this.width - this.width / 10)) + this.width / 20;
 
-        g.drawLine(xPosition + this.width / 80, lampY, xPosition + this.width / 80 + this.width / 40, lampY - lampCapHeight); // right diagonal
+            g.setColor(Color.DARK_GRAY);
+            g.fillRect(randomXPosition, lampY, this.width / 80, lampHeight);
 
-        g.setColor(Color.YELLOW);
-        g.fillOval(xPosition + this.width / 80, lampLightY, lampLightRadius, lampLightRadius); // x, y, width, height
+            g.drawLine(randomXPosition + this.width / 80, lampY, randomXPosition + this.width / 80 + this.width / 40, lampY - lampCapHeight);
+
+            g.setColor(Color.YELLOW);
+            g.fillOval(randomXPosition + this.width / 80, lampLightY, lampLightRadius, lampLightRadius);
+        }
     }
 
     // Paint the component
@@ -285,10 +291,10 @@ public class Scenery extends JPanel {
         super.paintComponent(g);
 
         // Draw the background
-        drawBackGround(g, dayOrNight, width, height);
+        drawBackGround(g, this.dayOrNight, this.width, this.height);
 
         // Draw ground
-        drawGround(g, height / 5 * 4);
+        drawGround(g);
 
         // Draw river
         drawRiver(g);
@@ -297,11 +303,10 @@ public class Scenery extends JPanel {
         drawBuildings(g);
 
         // Draw the Shanghai Pearl Tower
-        drawPearlTower(g, this.width / 2, this.groundHeight);
+        drawPearlTower(g, this.width / 2);
 
         // Draw lamps
-        drawLamps(g, this.width / 4);
-        drawLamps(g, this.width / 8 * 5);
+        drawLamps(g, 3);
 
         // Draw cars
         drawCars(g);
@@ -310,6 +315,6 @@ public class Scenery extends JPanel {
         drawBirds(g);
 
         // Draw weather
-        drawWeather(g, weather);
+        drawWeather(g, this.weather);
     }
 }
