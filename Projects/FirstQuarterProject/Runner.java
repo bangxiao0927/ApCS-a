@@ -5,9 +5,41 @@ public class Runner {
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
 
+        //user input
+
+        //day or night
+        System.out.println("Enter time of day (day/night): ");
+        String dayOrNight = scan.nextLine();
+        if (!dayOrNight.equals("day") && !dayOrNight.equals("night")) {
+            System.out.println("Invalid input. Please enter 'day' or 'night'.");
+            return;
+        }
+
+        System.out.println("Enter weather (sunny/rainy/cloudy): ");
+        String weather = scan.nextLine();
+        if (!weather.equals("sunny") && !weather.equals("rainy") && !weather.equals("cloudy")) {
+            System.out.println("Invalid input. Please enter 'sunny', 'rainy', or 'cloudy'.");
+            return;
+        }
+
+        if (dayOrNight.equals("night") && weather.equals("sunny")) {
+            System.out.println("Invalid combination: 'sunny' weather cannot occur at 'night'.");
+            return;
+        }
+
+        //screen size
+        System.out.println("Please enter the width of the window: ");
+        int width = scan.nextInt();
+        System.out.println("Please enter the height of the window: ");
+        int height = scan.nextInt();
+
+        System.out.println("Generating scenery...");
+        
+        //show the scenery
         JFrame frame = new JFrame("first quarter project");
 
-        Scenery s1 = new Scenery("day", "sunny", 1920, 1080);
+        //the size of the window could be change because the scenery will adapt to different size and relative ratio
+        Scenery s1 = new Scenery(dayOrNight, weather, width, height);
 
         frame.add(s1);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
