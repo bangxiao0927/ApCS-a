@@ -28,10 +28,16 @@ public class Runner {
         }
 
         //screen size
-        System.out.println("Please enter the width of the window: ");
+        System.out.println("Please enter the width of the window(0 for default 1920): ");
         int width = scan.nextInt();
-        System.out.println("Please enter the height of the window: ");
+        if (width == 0) {
+            width = 1920;
+        }
+        System.out.println("Please enter the height of the window(0 for default 1080): ");
         int height = scan.nextInt();
+        if (height == 0) {
+            height = 1080;
+        }
 
         System.out.println("Generating scenery...");
         
