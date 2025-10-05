@@ -72,6 +72,8 @@ public class Scenery extends JPanel {
             randomX = (int)(Math.random() * (this.width - this.minScale / 4));
             randomY = (int)(Math.random() * (this.height / 2 - this.minScale / 8));
             g.fillOval(randomX, randomY, this.minScale / 5, this.minScale / 10);
+            g.fillOval(randomX + this.minScale / 10, randomY + this.minScale / 20, this.minScale / 5, this.minScale / 10);
+            g.fillOval(randomX - this.minScale / 10, randomY - this.minScale / 20, this.minScale / 5, this.minScale / 10);
         }
     }
 
