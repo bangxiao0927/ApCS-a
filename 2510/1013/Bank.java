@@ -1,8 +1,8 @@
-public class Blank {
+public class Bank {
     private String name;
     private double balance;
 
-    public Blank(String name, double balance) {
+    public Bank(String name, double balance) {
         this.name = name;
         this.balance = balance;
     }

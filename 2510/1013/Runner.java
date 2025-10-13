@@ -2,7 +2,7 @@ import java.util.Scanner;
 
 public class Runner {
     public static void main(String[] args) {
-        Blank acc= new Blank("Bang X", 10000);
+        Bank acc= new Bank("Bang X", 10000);
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
