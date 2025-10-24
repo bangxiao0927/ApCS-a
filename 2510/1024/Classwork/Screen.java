@@ -24,17 +24,35 @@ public class Screen extends JPanel {
 
     @Override
     public Dimension getPreferredSize() {
-        return new Dimension(800, 600);
+        return new Dimension(1920, 1080);
     }
 
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
+        drawGround(g);
         drawSun(g);
         drawCloud(g);
         drawBird(g);
         drawBoat(g);
         drawStar(g);
+        
+		int x = 1;
+        while(x<=1920) {
+        	drawTree(g,x,900);
+            x+=96;
+        }
+        int grassX = 1;
+        while(grassX<=1920) {
+        	drawGrass(g,grassX,950);
+            grassX+=20;
+        }
+    }
+    
+    //ground
+    public void drawGround(Graphics g) {
+        g.setColor(new Color(34, 139, 34)); //green
+        g.fillRect(0, 920, 1920, 80);
     }
 
     // Sun moving upward
@@ -61,17 +79,32 @@ public class Screen extends JPanel {
 
     // Boat moving left
     public void drawBoat(Graphics g) {
-        g.setColor(Color.RED);
-        g.fillRect(boatX, boatY, 80, 20);
-        g.setColor(Color.WHITE);
-        g.fillPolygon(new int[]{boatX + 40, boatX + 60, boatX + 40},
-                      new int[]{boatY, boatY - 40, boatY}, 3);
+        g.setColor(new Color(139, 69, 19)); // brown
+        g.drawArc(sunY, sunY, 180, 80, 180, 180);
     }
 
     // Star moving upward
     public void drawStar(Graphics g) {
         g.setColor(Color.YELLOW);
         g.fillOval(starX, starY, 20, 20);
+    }
+    
+    // Tree
+    public void drawTree(Graphics g, int x, int y) {
+        // trunk
+        g.setColor(new Color(139, 69, 19)); // brown
+        g.fillRect(x, y, 50, 100);
+
+        // leaves
+        g.setColor(Color.GREEN);
+        g.fillOval(x - 25, y - 90, 100, 100);
+    }
+    
+    //grass
+    public void drawGrass(Graphics g, int x, int y) {
+        // blades
+        g.setColor(Color.GREEN); // green
+        g.fillRect(x, y, 10, 50);
     }
 
     public void animate() {
@@ -83,6 +116,14 @@ public class Screen extends JPanel {
             birdY += birdDY; // diagonal
             boatX -= boatSpeed; // left
             starY += starDY; // up
+            
+            // Wrap around edges to keep animation continuous
+            if (cloudX > getWidth()) cloudX = -100;
+            if (boatX < -100) boatX = getWidth();
+            if (birdX < -50 || birdX > getWidth()) birdDX = -birdDX;
+            if (birdY < 0 || birdY > getHeight()) birdDY = -birdDY;
+            if (sunY < -100) sunY = 1080;
+            if (starY < -50) starY = 1080;
 
             repaint();
 
