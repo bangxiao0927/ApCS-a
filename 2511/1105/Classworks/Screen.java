@@ -2,6 +2,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
+import java.util.Random;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -12,9 +13,9 @@ public class Screen extends JPanel implements java.awt.event.ActionListener {
     private static String flowerString;
     private static int numTrees = 40;
     private static int numFlowers = 20;
-	private JButton redrawButton;
-    private JTextField treeInput;
-    private JTextField flowerInput;
+	private final JButton redrawButton;
+    private final JTextField treeInput;
+    private final JTextField flowerInput;
 
     public Screen() {
         setLayout( null );
@@ -23,7 +24,7 @@ public class Screen extends JPanel implements java.awt.event.ActionListener {
         setBackground(Color.CYAN);
 
         redrawButton = new JButton("Repaint");
-		redrawButton.setBounds( 310, 30, 100, 30 );
+		redrawButton.setBounds( 50, 110, 100, 30 );
 
 		add( redrawButton );
 
@@ -44,50 +45,51 @@ public class Screen extends JPanel implements java.awt.event.ActionListener {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        Random random = new Random();
 
         // Draw ground
         drawGround(g);
        
         // Draw trees
         for(int i=0; i< numTrees; i++){
-            int treeX = (int)(Math.random() * getWidth());
-            int treeY = (int)(Math.random() * getHeight());
+            int treeX = random.nextInt(getWidth());
+            int treeY = random.nextInt(getHeight() - (getHeight() * 3 / 4) + 1) + (getHeight() * 3 / 4);
             drawTree(g,treeX, treeY);
         }
 
         // Draw flowers
         for(int i=0; i< numFlowers; i++){
-            int X = (int)(Math.random() * getWidth());
-            int Y = (int)(Math.random() * getHeight());
+            int X = random.nextInt(getWidth());
+            int Y = random.nextInt(getHeight() - (getHeight() * 3 / 4) + 1) + (getHeight() * 3 / 4);
             drawFlower(g, X, Y);
         }
 
         // Draw quantity of grass
         for(int i=0; i< 100; i++){
-            int X = (int)(Math.random() * getWidth());
-            int Y = (int)(Math.random() * getHeight());
-            drawFlower(g, X, Y);
+            int X = random.nextInt(getWidth());
+            int Y = random.nextInt(getHeight() - (getHeight() * 3 / 4) + 1) + (getHeight() * 3 / 4);
+            drawGrass(g, X, Y);
         }
 
         // Draw clouds
         for(int i=0; i< 10; i++){
-            int X = (int)(Math.random() * getWidth());
-            int Y = (int)(Math.random() * getHeight());
-            drawFlower(g, X, Y);
+            int X = random.nextInt(getWidth());
+            int Y = random.nextInt(getHeight() * 3 / 4 - (getHeight() * 1 / 4) + 1) + (getHeight() * 1 / 4);
+            drawCloud(g, X, Y);
         }
 
         // Draw birds
         for(int i=0; i< 3; i++){
-            int X = (int)(Math.random() * getWidth());
-            int Y = (int)(Math.random() * getHeight());
-            drawFlower(g, X, Y);
+            int X = random.nextInt(getWidth());
+            int Y = random.nextInt(getHeight() * 3 / 4 - (getHeight() * 1 / 4) + 1) + (getHeight() * 1 / 4);
+            drawBird(g, X, Y);
         }
 
         // Draw cows
         for(int i=0; i< 5; i++){
-            int X = (int)(Math.random() * getWidth());
-            int Y = (int)(Math.random() * getHeight());
-            drawFlower(g, X, Y);
+            int X = random.nextInt(getWidth());
+            int Y = random.nextInt(getHeight() - (getHeight() * 3 / 4) + 1) + (getHeight() * 3 / 4);
+            drawCow(g, X, Y);
         }
     }
 
@@ -151,11 +153,13 @@ public class Screen extends JPanel implements java.awt.event.ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == redrawButton) {
             treeString = treeInput.getText();
-            flowerInput.getText();
-            numTrees = Integer.parseInt(treeString);
-            numFlowers = Integer.parseInt(flowerString);
+            flowerString = flowerInput.getText();
 			removeAll();
             add( redrawButton );
+            add( treeInput );
+            add( flowerInput );
+            numTrees = Integer.parseInt(treeString);
+            numFlowers = Integer.parseInt(flowerString);
 			repaint();
 		}
     }
