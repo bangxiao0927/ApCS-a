@@ -132,10 +132,27 @@ public class Screen extends JPanel implements java.awt.event.ActionListener {
 
     // Draw one bird
     public void drawBird(Graphics g, int x, int y) {
-        g.setColor(Color.CYAN);
-        g.fillOval(x, y, 25, 15);
-        g.setColor(Color.ORANGE);
-        g.drawArc(x, y, WIDTH, HEIGHT, ABORT, HEIGHT); // beak
+        g.setColor(new Color(255, 220, 100));
+        g.fillOval(x + 30, y + 43, 40, 30);
+
+        // Head
+        g.fillOval(x + 50, y + 30, 23, 23);
+
+        // Wing
+        g.setColor(new Color(255, 180, 50));
+        g.fillOval(x + 10, y + 50, 40, 25);
+
+        // Eye
+        g.setColor(Color.WHITE);
+        g.fillOval(x + 58, y + 38, 8, 8);
+        g.setColor(Color.BLACK);
+        g.fillOval(x + 61, y + 41, 4, 4);
+
+        // Beak
+        g.setColor(new Color(255, 140, 0));
+        int[] xBeak = {x + 72, x + 80, x + 72}; //first point
+        int[] yBeak = {y + 45, y + 48, y + 52}; //second point
+        g.fillPolygon(xBeak, yBeak, 3); //end points (vertical)
     }   
 
     // Draw one animal (cow)
@@ -150,6 +167,7 @@ public class Screen extends JPanel implements java.awt.event.ActionListener {
         g.fillOval(x + 20, y + 5, 10, 10); // Udder
     }
     
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == redrawButton) {
             treeString = treeInput.getText();
