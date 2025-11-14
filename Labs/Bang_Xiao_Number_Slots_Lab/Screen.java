@@ -1,39 +1,27 @@
-import javax.swing.JPanel;
-import javax.swing.JButton;
-import javax.swing.Timer;
-import java.awt.Graphics;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.event.ActionListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.*;
 
-public class Screen extends JPanel implements ActionListener {
+public class Screen extends JPanel implements Runnable, ActionListener {
     private SlotMachine machine;
     private JButton spinButton;
     private JButton bet1Button;
     private JButton bet5Button;
     private JButton bet10Button;
-    private Timer animationTimer;
     
     public Screen() {
         this.setLayout(null);
         this.setFocusable(true);
         this.setBackground(Color.WHITE);
         
-        // Initialize the slot machine with starting balance of 100
         machine = new SlotMachine(100);
         
-        // Create animation timer (runs at ~60 FPS)
-        animationTimer = new Timer(16, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                machine.updateAnimation();
-                repaint();
-            }
-        });
-        animationTimer.start();
+        // Start animation thread
+        Thread t = new Thread(this);
+        t.start();
         
-        // Create bet selection buttons
+        //bet 1 button
         bet1Button = new JButton("Bet 1");
         bet1Button.setBounds(50, 450, 100, 50);
         bet1Button.addActionListener(this);
@@ -42,6 +30,7 @@ public class Screen extends JPanel implements ActionListener {
         bet1Button.setFont(new Font("Arial", Font.BOLD, 16));
         this.add(bet1Button);
         
+        //bet 5 button
         bet5Button = new JButton("Bet 5");
         bet5Button.setBounds(160, 450, 100, 50);
         bet5Button.addActionListener(this);
@@ -50,6 +39,7 @@ public class Screen extends JPanel implements ActionListener {
         bet5Button.setFont(new Font("Arial", Font.BOLD, 16));
         this.add(bet5Button);
         
+        //bet 10 button
         bet10Button = new JButton("Bet 10");
         bet10Button.setBounds(270, 450, 100, 50);
         bet10Button.addActionListener(this);
@@ -58,7 +48,7 @@ public class Screen extends JPanel implements ActionListener {
         bet10Button.setFont(new Font("Arial", Font.BOLD, 16));
         this.add(bet10Button);
         
-        // Create spin button
+        //spin button
         spinButton = new JButton("SPIN");
         spinButton.setBounds(380, 450, 150, 50);
         spinButton.addActionListener(this);
@@ -72,23 +62,19 @@ public class Screen extends JPanel implements ActionListener {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         
-        // Set white background
         g.setColor(Color.WHITE);
-        g.fillRect(0, 0, this.getWidth(), this.getHeight());
+        g.fillRect(0, 0, this.getWidth(), this.getHeight()); //background
         
-        // Draw the slot machine
-        machine.drawMe(g);
+        machine.drawMe(g); //draw slot machine
         
-        // Display message if out of points
-        if (!machine.canSpin() && !machine.isSpinning()) {
+        if (!(machine.canSpin()) && !(machine.isSpinning())) { // not enough points & not spinning
             g.setColor(Color.RED);
             g.setFont(new Font("Arial", Font.BOLD, 24));
             g.drawString("INSUFFICIENT POINTS - Lower your bet!", 60, 530);
         }
         
-        // Draw instructions
         g.setColor(Color.BLACK);
-        g.setFont(new Font("Arial", Font.PLAIN, 14));
+        g.setFont(new Font("Arial", Font.PLAIN, 14)); // set the font using
         g.drawString("Select your bet amount, then press SPIN!", 50, 520);
     }
     
@@ -121,18 +107,36 @@ public class Screen extends JPanel implements ActionListener {
     }
     
     private void highlightSelectedBet(int bet) {
-        // Reset all buttons to light gray
         bet1Button.setBackground(Color.LIGHT_GRAY);
         bet5Button.setBackground(Color.LIGHT_GRAY);
         bet10Button.setBackground(Color.LIGHT_GRAY);
         
-        // Highlight the selected bet button
-        if (bet == 1) {
-            bet1Button.setBackground(Color.YELLOW);
-        } else if (bet == 5) {
-            bet5Button.setBackground(Color.YELLOW);
-        } else if (bet == 10) {
-            bet10Button.setBackground(Color.YELLOW);
+        switch (bet) {
+            case 1:
+                bet1Button.setBackground(Color.YELLOW);
+                break;
+            case 5:
+                bet5Button.setBackground(Color.YELLOW);
+                break;
+            case 10:
+                bet10Button.setBackground(Color.YELLOW);
+                break;
+            default:
+                break;
+        }
+    }
+    
+    @Override
+    public void run() {
+        while (true) {
+            machine.updateAnimation();
+            repaint();
+            
+            try {
+                Thread.sleep(16); // ~60 FPS
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
