@@ -168,6 +168,6 @@ public class SlotMachine {
     }
     
     public boolean canSpin() {
-        return balance >= currentBet && !isSpinning;
+        return balance >= currentBet &&     !isSpinning;
     }
 }
