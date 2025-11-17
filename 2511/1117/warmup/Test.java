@@ -27,7 +27,9 @@ public class Test {
         if (arr.length == 0) {
             throw new IllegalArgumentException("Array cannot be empty");
         }
+
         int smallest = arr[0];
+        
         for (int num : arr) {
             if (num < smallest) {
                 smallest = num;
