@@ -11,7 +11,7 @@ public class Runner {
         boolean foundFive1 = at.searchNumber1(5, nums);
         System.out.println("Search Number 1 found 5: " + foundFive1);
         
-        boolean foundFive2 = at.searchNumber2(5, nums);
+        int foundFive2 = at.searchNumber2(5, nums);
         System.out.println("Search Number 2 found 5: " + foundFive2);
         
         int largest = at.findLargest(nums);
