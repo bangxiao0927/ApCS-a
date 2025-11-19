@@ -28,8 +28,8 @@ public class Test {
             throw new IllegalArgumentException("Array cannot be empty");
         }
 
-        int smallest = arr[0];
-        
+        int smallest = arr[0]; //start with the first elements
+
         for (int num : arr) {
             if (num < smallest) {
                 smallest = num;
