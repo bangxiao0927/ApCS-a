@@ -4,7 +4,7 @@ public class ArrayTest {
     public ArrayTest(int size) {
         numbers = new int[size];
         for (int i = 0; i < size; i++) {
-            numbers[i] = (int)(Math.random() * 9) + 1;
+            numbers[i] = (int)(Math.random() * 9) +1;
         }
     }
 

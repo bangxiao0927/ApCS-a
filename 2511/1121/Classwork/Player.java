@@ -58,4 +58,17 @@ public class Player{
 		x = x + 5;
 	}
 	
+
+    public boolean checkCollision(Target t){
+
+        if (x < t.getX() + t.getWidth() &&
+            x + width > t.getX() &&
+            y < t.getY() + t.getHeight() &&
+            y + height > t.getY()) {
+            System.out.println("Checking collision");
+            return true;
+        }
+
+        return false;
+    }
 }

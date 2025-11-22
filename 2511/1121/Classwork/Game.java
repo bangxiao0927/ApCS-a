@@ -2,8 +2,8 @@ import java.awt.Graphics;
 
 
 public class Game {
-    private Player p1;
-	private Target t1;
+    private final Player p1;
+	private final Target t1;
 
 
     public Game(){
@@ -29,6 +29,7 @@ public class Game {
         } else if(direction.equals("right")){
             p1.moveRight();
         }
-
+        
+        p1.checkCollision(t1);
     }
 }
