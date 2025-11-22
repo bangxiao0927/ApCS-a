@@ -20,16 +20,23 @@ public class Game {
 
 
     public void movePlayer(String direction){
-        if(direction.equals("up")){
-            p1.moveUp();
-        } else if(direction.equals("down")){
-            p1.moveDown();
-        } else if(direction.equals("left")){
-            p1.moveLeft();
-        } else if(direction.equals("right")){
-            p1.moveRight();
+        switch (direction) {
+            case "up":
+                p1.moveUp();
+                break;
+            case "down":
+                p1.moveDown();
+                break;
+            case "left":
+                p1.moveLeft();
+                break;
+            case "right":
+                p1.moveRight();
+                break;
+            default:
+                break;
         }
-        
+
         p1.checkCollision(t1);
     }
 }

@@ -3,13 +3,13 @@ import java.awt.Graphics;
 
 
 public class Target{
-	private int x;
-	private int y;
+	private final int x;
+	private final int y;
 	
-	private int width;
-	private int height;
+	private final int width;
+	private final int height;
 	
-	private Color red;
+	private final Color red;
 	
 
 

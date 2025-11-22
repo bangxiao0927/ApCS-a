@@ -8,7 +8,7 @@ import javax.swing.JPanel;
 public class Screen extends JPanel implements KeyListener {
 
 
-	private Game game;
+	private final Game game;
 
 
 	public Screen(){
@@ -20,37 +20,48 @@ public class Screen extends JPanel implements KeyListener {
 		setFocusable(true);
 	}
 
-
+    @Override
 	public Dimension getPreferredSize() {
 		//Sets the size of the panel
         return new Dimension(800,600);
 	}
 	
+    @Override
 	public void paintComponent(Graphics g) {
         super.paintComponent(g);
 	
 		game.drawMe(g);
 	} 
 	
-	
+	@Override
 	public void keyPressed(KeyEvent e){
 		
 		System.out.println("key: " + e.getKeyCode());
-		if( e.getKeyCode() == 38 ){  //up arrow
-			game.movePlayer("up");	
-		} else if( e.getKeyCode() == 40 ){  
-			game.movePlayer("down");
-		} else if( e.getKeyCode() == 37 ){  
-			game.movePlayer("left");
-		} else if( e.getKeyCode() == 39 ){  
-			game.movePlayer("right");
-		}
+            switch (e.getKeyCode()) {
+                case 38:
+                    //up arrow
+                    game.movePlayer("up");
+                    break;
+                case 40:
+                    game.movePlayer("down");
+                    break;
+                case 37:
+                    game.movePlayer("left");
+                    break;
+                case 39:
+                    game.movePlayer("right");
+                    break;
+                default:
+                    break;
+            }
 		
 		repaint();
 		
 	}
 	
+    @Override
 	public void keyReleased(KeyEvent e){}
+	@Override
 	public void keyTyped(KeyEvent e){}
 	
 	

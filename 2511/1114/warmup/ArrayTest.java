@@ -1,5 +1,5 @@
 public class ArrayTest {
-    private int[] numbers;
+    private final int[] numbers;
 
     public ArrayTest(int size) {
         numbers = new int[size];

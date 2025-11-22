@@ -6,10 +6,10 @@ public class Player{
 	private int x;
 	private int y;
 	
-	private int width;
-	private int height;
+	private final int width;
+	private final int height;
 	
-	private Color blue;
+	private final Color blue;
 	
 	public Player(int x, int y){
 		this.x = x;
