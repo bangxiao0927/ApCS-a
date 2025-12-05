@@ -7,7 +7,6 @@ public class Game {
 
 
     public Game(){
-        
         p1 = new Player(50,300);
         t1 = new Target(150,300);   
     }
