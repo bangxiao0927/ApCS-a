@@ -4,10 +4,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-public class Screen extends JPanel implements KeyListener, ActionListener {
+public class Screen extends JPanel implements KeyListener, MouseListener, ActionListener {
     private Game game;
     private Timer timer;
     
@@ -25,6 +27,7 @@ public class Screen extends JPanel implements KeyListener, ActionListener {
         rightPressed = false;
         
         addKeyListener(this);
+        addMouseListener(this);
         setFocusable(true);
     }
 
@@ -42,12 +45,14 @@ public class Screen extends JPanel implements KeyListener, ActionListener {
         // Game loop - update game state
         game.update();
         
-        // Handle continuous key presses
-        if(leftPressed){
-            game.movePlayer("left");
-        }
-        if(rightPressed){
-            game.movePlayer("right");
+        // Handle continuous key presses (only during gameplay)
+        if(game.getCurrentState() == Game.GameState.PLAYING){
+            if(leftPressed){
+                game.movePlayer("left");
+            }
+            if(rightPressed){
+                game.movePlayer("right");
+            }
         }
         
         repaint();
@@ -60,6 +65,8 @@ public class Screen extends JPanel implements KeyListener, ActionListener {
             rightPressed = true;
         } else if( e.getKeyCode() == 32 ){  // Spacebar
             game.restartGame();
+        } else if( e.getKeyCode() == 27 ){  // ESC key
+            game.backToMenu();
         }
     }
     
@@ -72,4 +79,24 @@ public class Screen extends JPanel implements KeyListener, ActionListener {
     }
     
     public void keyTyped(KeyEvent e){}
+    
+    // Mouse event handlers
+    @Override
+    public void mouseClicked(MouseEvent e){
+        int mouseX = e.getX();
+        int mouseY = e.getY();
+        game.handleClick(mouseX, mouseY);
+    }
+    
+    @Override
+    public void mousePressed(MouseEvent e){}
+    
+    @Override
+    public void mouseReleased(MouseEvent e){}
+    
+    @Override
+    public void mouseEntered(MouseEvent e){}
+    
+    @Override
+    public void mouseExited(MouseEvent e){}
 }
