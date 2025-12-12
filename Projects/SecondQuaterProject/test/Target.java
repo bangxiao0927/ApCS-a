@@ -12,35 +12,45 @@ public class Target{
     private Color centerColor;
 
     public Target(int x, int y){
+        this(x, y, 100, 75);
+    }
+    
+    public Target(int x, int y, int width, int height){
         this.x = x;
         this.y = y;
-        this.width = 100;
-        this.height = 75;
-        this.targetColor = new Color(255, 0, 0, 150); // Semi-transparent red
-        this.centerColor = new Color(255, 255, 255, 200); // Semi-transparent white
+        this.width = width;
+        this.height = height;
+        this.targetColor = new Color(255, 0, 0, 150);
+        this.centerColor = new Color(255, 255, 255, 200);
     }
     
     public void drawMe(Graphics g){
-        // Draw target zone with concentric circles/rectangles
+        // Draw target zone with concentric circles
         
         // Outer circle (red)
         g.setColor(targetColor);
         g.fillOval(x, y, width, height);
         
-        // Middle circle (white)
-        g.setColor(centerColor);
-        g.fillOval(x + 15, y + 15, width - 30, height - 30);
-        
-        // Inner circle (red)
-        g.setColor(targetColor);
-        g.fillOval(x + 30, y + 30, width - 60, height - 60);
+        // Only draw inner circles if target is large enough
+        if(width > 40){
+            // Middle circle (white)
+            g.setColor(centerColor);
+            int middleInset = width / 6;
+            g.fillOval(x + middleInset, y + middleInset, width - middleInset*2, height - middleInset*2);
+            
+            // Inner circle (red)
+            g.setColor(targetColor);
+            int innerInset = width / 3;
+            g.fillOval(x + innerInset, y + innerInset, width - innerInset*2, height - innerInset*2);
+        }
         
         // Draw crosshair in center
         g.setColor(Color.WHITE);
         int centerX = x + width/2;
         int centerY = y + height/2;
-        g.drawLine(centerX - 10, centerY, centerX + 10, centerY);
-        g.drawLine(centerX, centerY - 10, centerX, centerY + 10);
+        int crosshairSize = Math.min(10, width/4);
+        g.drawLine(centerX - crosshairSize, centerY, centerX + crosshairSize, centerY);
+        g.drawLine(centerX, centerY - crosshairSize, centerX, centerY + crosshairSize);
     }
 
     public int getX(){

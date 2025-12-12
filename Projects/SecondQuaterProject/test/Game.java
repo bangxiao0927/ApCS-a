@@ -1,6 +1,6 @@
+import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics;
 
 public class Game {
     private Player skydiver;
@@ -9,6 +9,7 @@ public class Game {
     private boolean gameOver;
     private boolean landed;
     private String resultMessage;
+    private int currentLevel;
     
     private static final int GROUND_LEVEL = 550;
     private static final int SKY_START = 50;
@@ -25,19 +26,75 @@ public class Game {
 
     public Game(){
         currentState = GameState.MAIN_MENU;
+        currentLevel = 1;
     }
     
     public void startNewJump(){
+        startNewJump(currentLevel);
+    }
+    
+    public void startNewJump(int level){
+        currentLevel = level;
         skydiver = new Player(400, SKY_START);
-        landingZone = new Target(350, GROUND_LEVEL - 75);
         
-        // Randomize wind speed for each jump (-3 to 3)
-        windSpeed = (Math.random() * 6) - 3;
+        // Target size decreases with level
+        int targetSize = getTargetSizeForLevel(level);
+        
+        // Random position for level 4+
+        int targetX;
+        if(level >= 4){
+            // Random X position, keeping target on screen
+            targetX = 100 + (int)(Math.random() * (600 - targetSize));
+        } else {
+            // Centered position for easier levels
+            targetX = 400 - targetSize/2;
+        }
+        
+        landingZone = new Target(targetX, GROUND_LEVEL - targetSize, targetSize, targetSize);
+        
+        // Wind speed varies by level difficulty
+        windSpeed = generateWindForLevel(level);
         
         gameOver = false;
         landed = false;
         resultMessage = "";
         currentState = GameState.PLAYING;
+    }
+    
+    private int getTargetSizeForLevel(int level){
+        switch(level){
+            case 1: return 120; // Very large
+            case 2: return 100; // Large
+            case 3: return 80;  // Medium
+            case 4: return 60;  // Small
+            case 5: return 45;  // Very small
+            default: return 35; // Tiny (Endless)
+        }
+    }
+    
+    private double generateWindForLevel(int level){
+        double windRange;
+        switch(level){
+            case 1: // Beginner: -2 to 2
+                windRange = 2.0;
+                break;
+            case 2: // Intermediate: -3.5 to 3.5
+                windRange = 3.5;
+                break;
+            case 3: // Advanced: -5 to 5
+                windRange = 5.0;
+                break;
+            case 4: // Expert: -6.5 to 6.5
+                windRange = 6.5;
+                break;
+            case 5: // Master: -8 to 8
+                windRange = 8.0;
+                break;
+            default: // Endless: -10 to 10
+                windRange = 10.0;
+                break;
+        }
+        return (Math.random() * windRange * 2) - windRange;
     }
 
     public void update(){
@@ -57,19 +114,31 @@ public class Game {
     }
     
     private void checkLanding(){
+        // Check landing speed - must be slow enough to survive
+        double landingSpeed = skydiver.getVelocityY();
+        boolean speedSafe = landingSpeed <= 3.0; // Safe landing speed threshold
+        
         // Check if skydiver landed in the target zone
         int skydiverCenterX = skydiver.getX() + skydiver.getWidth()/2;
         int targetLeft = landingZone.getX();
         int targetRight = landingZone.getX() + landingZone.getWidth();
         
-        if(skydiverCenterX >= targetLeft && skydiverCenterX <= targetRight){
-            resultMessage = "Perfect Landing!";
+        boolean inTargetZone = skydiverCenterX >= targetLeft && skydiverCenterX <= targetRight;
+        
+        if(!speedSafe){
+            // Crashed due to high speed
+            resultMessage = "CRASH! Speed too high: " + String.format("%.1f", landingSpeed);
+            skydiver.crash();
+        } else if(inTargetZone){
+            // Perfect landing - slow speed and in target
+            resultMessage = "Perfect Landing! Speed: " + String.format("%.1f", landingSpeed);
         } else {
+            // Missed target but survived
             int distance = Math.min(
                 Math.abs(skydiverCenterX - targetLeft),
                 Math.abs(skydiverCenterX - targetRight)
             );
-            resultMessage = "Missed by " + distance + " pixels!";
+            resultMessage = "Missed by " + distance + " pixels. Speed: " + String.format("%.1f", landingSpeed);
         }
         gameOver = true;
     }
@@ -210,9 +279,22 @@ public class Game {
         
         // Draw result message if game over
         if(gameOver){
-            g.setColor(Color.BLACK);
+            // Check if it was a crash
+            boolean crashed = skydiver.isCrashed();
+            
+            if(crashed){
+                g.setColor(new Color(255, 0, 0));
+            } else {
+                g.setColor(Color.BLACK);
+            }
+            
             g.setFont(new Font("Arial", Font.BOLD, 36));
-            g.drawString(resultMessage, 250, 300);
+            
+            // Calculate text position based on length
+            int textWidth = g.getFontMetrics().stringWidth(resultMessage);
+            int textX = (800 - textWidth) / 2;
+            g.drawString(resultMessage, textX, 300);
+            
             g.setFont(new Font("Arial", Font.PLAIN, 20));
             g.drawString("Press SPACE to jump again", 260, 350);
             g.drawString("Press ESC for main menu", 270, 380);
@@ -279,8 +361,42 @@ public class Game {
         // Display velocity
         g.drawString(String.format("Speed: %.1f", skydiver.getVelocityY()), 10, 85);
         
+        // Display parachute status
+        if(skydiver.isParachuteOpen()){
+            g.setColor(new Color(100, 255, 100));
+            g.drawString("PARACHUTE: OPEN", 10, 110);
+        } else {
+            g.setColor(Color.YELLOW);
+            g.drawString("Press SPACE to open parachute", 10, 110);
+        }
+        
+        // Display safe landing speed warning
+        if(skydiver.getVelocityY() > 3.0){
+            g.setColor(new Color(255, 50, 50));
+            g.drawString("WARNING: SPEED TOO HIGH!", 10, 135);
+        } else {
+            g.setColor(new Color(100, 255, 100));
+            g.drawString("Landing speed: SAFE", 10, 135);
+        }
+        
         // Display controls
-        g.drawString("Controls: LEFT/RIGHT arrows", 600, 30);
+        g.setColor(Color.WHITE);
+        g.drawString("Controls: LEFT/RIGHT arrows, SPACE", 560, 30);
+        
+        // Display level
+        String levelName = getLevelName(currentLevel);
+        g.drawString("Level: " + levelName, 10, 160);
+    }
+    
+    private String getLevelName(int level){
+        switch(level){
+            case 1: return "Beginner";
+            case 2: return "Intermediate";
+            case 3: return "Advanced";
+            case 4: return "Expert";
+            case 5: return "Master";
+            default: return "Endless";
+        }
     }
 
     public void movePlayer(String direction){
@@ -290,6 +406,12 @@ public class Game {
             } else if(direction.equals("right")){
                 skydiver.moveRight();
             }
+        }
+    }
+    
+    public void openParachute(){
+        if(currentState == GameState.PLAYING && !gameOver && !landed){
+            skydiver.openParachute();
         }
     }
     
@@ -319,27 +441,27 @@ public class Game {
             case LEVEL_SELECT:
                 // Level 1
                 if(isInButton(mouseX, mouseY, 150, 150, 180, 80)){
-                    startNewJump();
+                    startNewJump(1);
                 }
                 // Level 2
                 else if(isInButton(mouseX, mouseY, 150, 260, 180, 80)){
-                    startNewJump();
+                    startNewJump(2);
                 }
                 // Level 3
                 else if(isInButton(mouseX, mouseY, 150, 370, 180, 80)){
-                    startNewJump();
+                    startNewJump(3);
                 }
                 // Level 4
                 else if(isInButton(mouseX, mouseY, 450, 150, 180, 80)){
-                    startNewJump();
+                    startNewJump(4);
                 }
                 // Level 5
                 else if(isInButton(mouseX, mouseY, 450, 260, 180, 80)){
-                    startNewJump();
+                    startNewJump(5);
                 }
                 // Endless Mode
                 else if(isInButton(mouseX, mouseY, 450, 370, 180, 80)){
-                    startNewJump();
+                    startNewJump(6);
                 }
                 // Back button
                 else if(isInButton(mouseX, mouseY, 300, 500, 200, 50)){

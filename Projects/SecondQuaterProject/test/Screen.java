@@ -64,7 +64,13 @@ public class Screen extends JPanel implements KeyListener, MouseListener, Action
         } else if( e.getKeyCode() == 39 ){  // Right arrow
             rightPressed = true;
         } else if( e.getKeyCode() == 32 ){  // Spacebar
-            game.restartGame();
+            if(game.getCurrentState() == Game.GameState.PLAYING && !game.isGameOver()){
+                // Open parachute during gameplay
+                game.openParachute();
+            } else {
+                // Restart game after landing
+                game.restartGame();
+            }
         } else if( e.getKeyCode() == 27 ){  // ESC key
             game.backToMenu();
         }
