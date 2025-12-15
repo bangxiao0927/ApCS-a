@@ -12,7 +12,16 @@ public class Game {
     private int currentLevel;
     private boolean autoRevive;
     private long reviveTimer;
-    private static final long REVIVE_DELAY = 2000; // 2 seconds delay before auto revive
+    private static final long REVIVE_DELAY = 2000; 
+    
+    // Statistics tracking
+    private int[] levelBestScores; // 0=crash, 1=miss distance, 2=perfect
+    private int[] levelBestMissDistance; // Best miss distance for each level
+    private int[] levelAttempts; // Number of attempts for each level
+    private int[] levelPerfectLandings; // Number of perfect landings for each level
+    private int endlessBestStreak;
+    private int endlessTotalJumps;
+    private int currentEndlessStreak;
     
     private static final int GROUND_LEVEL = 550;
     private static final int SKY_START = 50;
@@ -32,6 +41,22 @@ public class Game {
         currentLevel = 1;
         autoRevive = false;
         reviveTimer = 0;
+        
+        // Initialize statistics (index 0 unused, levels 1-5 use indices 1-5)
+        levelBestScores = new int[6]; // 0=not attempted, 1=crash, 2=miss, 3=perfect
+        levelBestMissDistance = new int[6]; // Best (minimum) miss distance
+        levelAttempts = new int[6];
+        levelPerfectLandings = new int[6];
+        
+        // Initialize with "not attempted" status
+        for(int i = 1; i <= 5; i++){
+            levelBestScores[i] = 0; // 0 = not attempted
+            levelBestMissDistance[i] = Integer.MAX_VALUE; // Start with worst possible
+        }
+        
+        endlessBestStreak = 0;
+        endlessTotalJumps = 0;
+        currentEndlessStreak = 0;
     }
     
     public void startNewJump(){
@@ -41,14 +66,19 @@ public class Game {
     public void startNewJump(int level){
         currentLevel = level;
         
-        // Enable auto revive for endless mode (level 6+)
-        autoRevive = (level >= 6);
+        // Enable auto revive for endless mode
+        autoRevive = (level == 6);
         reviveTimer = 0;
+        
+        // Reset endless streak if switching to a different level
+        if(level != 6){
+            currentEndlessStreak = 0;
+        }
         
         // Random spawn position for level 4+
         int spawnX;
         if(level >= 4){
-            // Random X position for player spawn, keeping them on screen
+            // Random X position for player spawn
             spawnX = 100 + (int)(Math.random() * 401);
         } else {
             // Centered spawn for easier levels
@@ -161,6 +191,9 @@ public class Game {
         
         boolean inTargetZone = skydiverCenterX >= targetLeft && skydiverCenterX <= targetRight;
         
+        // Record statistics
+        recordGameStatistics(speedSafe, inTargetZone, skydiverCenterX, targetLeft, targetRight);
+        
         if(!speedSafe){
             // Crashed due to high speed
             if(autoRevive){
@@ -189,6 +222,63 @@ public class Game {
             }
         }
         gameOver = true;
+    }
+    
+    private void recordGameStatistics(boolean speedSafe, boolean inTargetZone, int skydiverCenterX, int targetLeft, int targetRight){
+        if(currentLevel >= 1 && currentLevel <= 5){
+            // Record statistics for regular levels
+            levelAttempts[currentLevel]++;
+            
+            if(!speedSafe){
+                // Crashed - worst outcome
+                if(levelBestScores[currentLevel] < 1){
+                    levelBestScores[currentLevel] = 1; // Crash
+                }
+            } else if(inTargetZone){
+                // Perfect landing - best outcome
+                levelBestScores[currentLevel] = 3; // Perfect
+                levelPerfectLandings[currentLevel]++;
+            } else {
+                // Missed but survived
+                int distance = Math.min(
+                    Math.abs(skydiverCenterX - targetLeft),
+                    Math.abs(skydiverCenterX - targetRight)
+                );
+                
+                // Update best miss distance
+                if(distance < levelBestMissDistance[currentLevel]){
+                    levelBestMissDistance[currentLevel] = distance;
+                }
+                
+                // Update best score if this is better than crashing
+                if(levelBestScores[currentLevel] < 2){
+                    levelBestScores[currentLevel] = 2; // Miss
+                }
+            }
+        } else if(currentLevel == 6){
+            // Record statistics for endless mode
+            endlessTotalJumps++;
+            
+            if(!speedSafe){
+                // Crashed - reset streak
+                if(currentEndlessStreak > endlessBestStreak){
+                    endlessBestStreak = currentEndlessStreak;
+                }
+                currentEndlessStreak = 0;
+            } else if(inTargetZone){
+                // Perfect landing - continue streak
+                currentEndlessStreak++;
+                if(currentEndlessStreak > endlessBestStreak){
+                    endlessBestStreak = currentEndlessStreak;
+                }
+            } else {
+                // Missed but survived - reset streak
+                if(currentEndlessStreak > endlessBestStreak){
+                    endlessBestStreak = currentEndlessStreak;
+                }
+                currentEndlessStreak = 0;
+            }
+        }
     }
 
     public void drawMe(Graphics g){
@@ -309,29 +399,56 @@ public class Game {
         g.setColor(new Color(255, 255, 255, 200));
         g.fillRoundRect(150, 120, 500, 350, 20, 20);
         
-        // Sample records
+        // Real statistics
         g.setColor(Color.BLACK);
         g.setFont(new Font("Arial", Font.BOLD, 24));
-        g.drawString("Best Scores:", 200, 160);
+        g.drawString("Performance Records:", 200, 160);
         
-        g.setFont(new Font("Courier", Font.PLAIN, 18));
-        String[] records = {
-            "Level 1:    Perfect Landing x5",
-            "Level 2:    Perfect Landing x3",
-            "Level 3:    Miss by 15 pixels",
-            "Level 4:    Miss by 28 pixels",
-            "Level 5:    Not Attempted",
-            "",
-            "Endless Mode:",
-            "  Best Streak: 0 landings",
-            "  Total Jumps: 0"
-        };
+        g.setFont(new Font("Courier", Font.PLAIN, 16));
         
-        int yPos = 200;
-        for(String record : records){
-            g.drawString(record, 200, yPos);
-            yPos += 30;
+        int yPos = 190;
+        
+        // Display level records
+        for(int level = 1; level <= 5; level++){
+            String levelRecord = "Level " + level + " (" + getLevelName(level) + "): ";
+            
+            if(levelBestScores[level] == 0){
+                levelRecord += "Not Attempted";
+            } else if(levelBestScores[level] == 1){
+                levelRecord += "Crashed (" + levelAttempts[level] + " attempts)";
+            } else if(levelBestScores[level] == 3){
+                levelRecord += "Perfect x" + levelPerfectLandings[level] + " (" + levelAttempts[level] + " attempts)";
+            } else {
+                levelRecord += "Best Miss: " + levelBestMissDistance[level] + "px (" + levelAttempts[level] + " attempts)";
+            }
+            
+            // Color code the records
+            if(levelBestScores[level] == 0){
+                g.setColor(Color.GRAY);
+            } else if(levelBestScores[level] == 1){
+                g.setColor(new Color(200, 50, 50));
+            } else if(levelBestScores[level] == 3){
+                g.setColor(new Color(50, 200, 50));
+            } else {
+                g.setColor(new Color(200, 150, 50));
+            }
+            
+            g.drawString(levelRecord, 170, yPos);
+            yPos += 22;
         }
+        
+        // Endless mode statistics
+        g.setColor(Color.BLACK);
+        yPos += 10;
+        g.drawString("Endless Mode Statistics:", 170, yPos);
+        yPos += 25;
+        
+        g.setColor(new Color(255, 140, 0));
+        g.drawString("  Best Streak: " + endlessBestStreak + " perfect landings", 170, yPos);
+        yPos += 20;
+        g.drawString("  Current Streak: " + currentEndlessStreak + " perfect landings", 170, yPos);
+        yPos += 20;
+        g.drawString("  Total Jumps: " + endlessTotalJumps, 170, yPos);
         
         // Back button
         drawButton(g, 300, 500, 200, 50, "Back to Menu", new Color(150, 150, 150));
