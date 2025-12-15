@@ -10,6 +10,9 @@ public class Game {
     private boolean landed;
     private String resultMessage;
     private int currentLevel;
+    private boolean autoRevive;
+    private long reviveTimer;
+    private static final long REVIVE_DELAY = 2000; // 2 seconds delay before auto revive
     
     private static final int GROUND_LEVEL = 550;
     private static final int SKY_START = 50;
@@ -27,6 +30,8 @@ public class Game {
     public Game(){
         currentState = GameState.MAIN_MENU;
         currentLevel = 1;
+        autoRevive = false;
+        reviveTimer = 0;
     }
     
     public void startNewJump(){
@@ -35,6 +40,10 @@ public class Game {
     
     public void startNewJump(int level){
         currentLevel = level;
+        
+        // Enable auto revive for endless mode (level 6+)
+        autoRevive = (level >= 6);
+        reviveTimer = 0;
         
         // Random spawn position for level 4+
         int spawnX;
@@ -128,6 +137,16 @@ public class Game {
                 checkLanding();
             }
         }
+        
+        // Handle auto revive in endless mode
+        if(currentState == GameState.PLAYING && gameOver && autoRevive){
+            if(reviveTimer == 0){
+                reviveTimer = System.currentTimeMillis();
+            } else if(System.currentTimeMillis() - reviveTimer >= REVIVE_DELAY){
+                // Auto restart after delay
+                startNewJump(currentLevel);
+            }
+        }
     }
     
     private void checkLanding(){
@@ -144,18 +163,30 @@ public class Game {
         
         if(!speedSafe){
             // Crashed due to high speed
-            resultMessage = "CRASH! Speed too high: " + String.format("%.1f", landingSpeed);
+            if(autoRevive){
+                resultMessage = "CRASH! Auto reviving in 2 seconds... Speed: " + String.format("%.1f", landingSpeed);
+            } else {
+                resultMessage = "CRASH! Speed too high: " + String.format("%.1f", landingSpeed);
+            }
             skydiver.crash();
         } else if(inTargetZone){
             // Perfect landing - slow speed and in target
-            resultMessage = "Perfect Landing! Speed: " + String.format("%.1f", landingSpeed);
+            if(autoRevive){
+                resultMessage = "Perfect Landing! New jump starting... Speed: " + String.format("%.1f", landingSpeed);
+            } else {
+                resultMessage = "Perfect Landing! Speed: " + String.format("%.1f", landingSpeed);
+            }
         } else {
             // Missed target but survived
             int distance = Math.min(
                 Math.abs(skydiverCenterX - targetLeft),
                 Math.abs(skydiverCenterX - targetRight)
             );
-            resultMessage = "Missed by " + distance + " pixels. Speed: " + String.format("%.1f", landingSpeed);
+            if(autoRevive){
+                resultMessage = "Missed by " + distance + " pixels. Auto reviving... Speed: " + String.format("%.1f", landingSpeed);
+            } else {
+                resultMessage = "Missed by " + distance + " pixels. Speed: " + String.format("%.1f", landingSpeed);
+            }
         }
         gameOver = true;
     }
@@ -436,6 +467,12 @@ public class Game {
         // Display level
         String levelName = getLevelName(currentLevel);
         g.drawString("Level: " + levelName, 10, 160);
+        
+        // Display auto revive status for endless mode
+        if(autoRevive){
+            g.setColor(new Color(100, 255, 100));
+            g.drawString("AUTO REVIVE: ENABLED", 10, 185);
+        }
     }
     
     private String getLevelName(int level){
