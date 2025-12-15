@@ -42,7 +42,7 @@ public class Screen extends JPanel implements KeyListener, MouseListener, Action
     
     @Override
     public void actionPerformed(ActionEvent e){
-        // Game loop - update game state
+        // Game loop
         game.update();
         
         // Handle continuous key presses (only during gameplay)
@@ -59,11 +59,14 @@ public class Screen extends JPanel implements KeyListener, MouseListener, Action
     }
     
     public void keyPressed(KeyEvent e){
-        if( e.getKeyCode() == 37 ){  // Left arrow
+        if( e.getKeyCode() == 37 ){
+            // Left arrow
             leftPressed = true;
-        } else if( e.getKeyCode() == 39 ){  // Right arrow
+        } else if( e.getKeyCode() == 39 ) {
+            // Right arrow
             rightPressed = true;
-        } else if( e.getKeyCode() == 32 ){  // Spacebar
+        } else if( e.getKeyCode() == 32 ) {
+            // Spacebar
             if(game.getCurrentState() == Game.GameState.PLAYING && !game.isGameOver()){
                 // Open parachute during gameplay
                 game.openParachute();
@@ -71,15 +74,18 @@ public class Screen extends JPanel implements KeyListener, MouseListener, Action
                 // Restart game after landing
                 game.restartGame();
             }
-        } else if( e.getKeyCode() == 27 ){  // ESC key
+        } else if( e.getKeyCode() == 27 ) {
+            // ESC key
             game.backToMenu();
         }
     }
     
     public void keyReleased(KeyEvent e){
-        if( e.getKeyCode() == 37 ){  // Left arrow
+        if( e.getKeyCode() == 37 ) {
+            // Left arrow
             leftPressed = false;
-        } else if( e.getKeyCode() == 39 ){  // Right arrow
+        } else if( e.getKeyCode() == 39 ) {
+            // Right arrow
             rightPressed = false;
         }
     }

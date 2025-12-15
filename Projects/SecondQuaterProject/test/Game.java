@@ -118,7 +118,7 @@ public class Game {
             case 3: return 80;  // Medium
             case 4: return 60;  // Small
             case 5: return 45;  // Very small
-            default: return 35; // Tiny (Endless)
+            default: return 35; // Endless
         }
     }
     
@@ -168,7 +168,7 @@ public class Game {
             }
         }
         
-        // Handle auto revive in endless mode
+        // auto revive in endless mode
         if(currentState == GameState.PLAYING && gameOver && autoRevive){
             if(reviveTimer == 0){
                 reviveTimer = System.currentTimeMillis();
@@ -180,7 +180,7 @@ public class Game {
     }
     
     private void checkLanding(){
-        // Check landing speed - must be slow enough to survive
+        // Check landing speed 
         double landingSpeed = skydiver.getVelocityY();
         boolean speedSafe = landingSpeed <= 2.5; // Safe landing speed threshold
         
@@ -203,7 +203,7 @@ public class Game {
             }
             skydiver.crash();
         } else if(inTargetZone){
-            // Perfect landing - slow speed and in target
+            // Perfect landing
             if(autoRevive){
                 resultMessage = "Perfect Landing! New jump starting... Speed: " + String.format("%.1f", landingSpeed);
             } else {
@@ -230,12 +230,12 @@ public class Game {
             levelAttempts[currentLevel]++;
             
             if(!speedSafe){
-                // Crashed - worst outcome
+                // Crashed 
                 if(levelBestScores[currentLevel] < 1){
                     levelBestScores[currentLevel] = 1; // Crash
                 }
             } else if(inTargetZone){
-                // Perfect landing - best outcome
+                // Perfect landing
                 levelBestScores[currentLevel] = 3; // Perfect
                 levelPerfectLandings[currentLevel]++;
             } else {
@@ -317,7 +317,7 @@ public class Game {
         g.setFont(new Font("Arial", Font.BOLD, 72));
         g.drawString("SKY DIVER", 180, 150);
         
-        // Subtitle - RED
+        // Subtitle
         g.setColor(new Color(220, 20, 20)); // Bright red
         g.setFont(new Font("Arial", Font.ITALIC, 24));
         g.drawString("Master the winds, nail the landing", 200, 200);

@@ -1,14 +1,11 @@
 import javax.swing.JFrame;
 
-
-
-
 public class Runner {
   
 	public static void main(String[] args) {
 
 
-		JFrame frame = new JFrame("Keyboard Demo");
+		JFrame frame = new JFrame("Second Quarter Project - Sky Diver");
 
 
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -21,7 +18,5 @@ public class Runner {
 		frame.pack();
 		frame.setVisible(true);
 		
-
-
     }
 }

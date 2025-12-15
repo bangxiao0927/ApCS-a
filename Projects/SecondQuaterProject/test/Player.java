@@ -103,7 +103,7 @@ public class Player{
     public void openParachute(){
         if(!parachuteOpen){
             parachuteOpen = true;
-            // Don't instantly slow down - let the deployment animation handle it
+            // Don't instantly slow down
         }
     }
     
