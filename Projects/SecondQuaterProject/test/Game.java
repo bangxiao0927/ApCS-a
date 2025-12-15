@@ -1,6 +1,6 @@
-import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Graphics;
 
 public class Game {
     private Player skydiver;
@@ -73,28 +73,34 @@ public class Game {
     }
     
     private double generateWindForLevel(int level){
-        double windRange;
+        double windRangeLeft, windRangeRight;
         switch(level){
             case 1: // Beginner: -2 to 2
-                windRange = 2.0;
+                windRangeLeft = 0.0;
+                windRangeRight = 2.0;
                 break;
             case 2: // Intermediate: -3.5 to 3.5
-                windRange = 3.5;
+                windRangeLeft = 1.0;
+                windRangeRight = 3.5;
                 break;
             case 3: // Advanced: -5 to 5
-                windRange = 5.0;
+                windRangeLeft = 2.5;
+                windRangeRight = 5.0;
                 break;
             case 4: // Expert: -6.5 to 6.5
-                windRange = 6.5;
+                windRangeLeft = 3.5;
+                windRangeRight = 6.5;
                 break;
             case 5: // Master: -8 to 8
-                windRange = 8.0;
+                windRangeLeft = 5.0;
+                windRangeRight = 8.0;
                 break;
             default: // Endless: -10 to 10
-                windRange = 10.0;
+                windRangeLeft = 6.0;
+                windRangeRight = 10.0;
                 break;
         }
-        return (Math.random() * windRange * 2) - windRange;
+        return (Math.random() * (windRangeRight - windRangeLeft) * 2) - windRangeRight; //*2 for negatives
     }
 
     public void update(){
@@ -364,7 +370,7 @@ public class Game {
         // Display parachute status
         if(skydiver.isParachuteOpen()){
             g.setColor(new Color(100, 255, 100));
-            g.drawString("PARACHUTE: OPEN", 10, 110);
+            g.drawString("PARACHUTE: DEPLOYING...", 10, 110);
         } else {
             g.setColor(Color.YELLOW);
             g.drawString("Press SPACE to open parachute", 10, 110);

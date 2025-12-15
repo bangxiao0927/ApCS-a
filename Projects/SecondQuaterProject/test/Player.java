@@ -13,14 +13,16 @@ public class Player{
     
     private boolean parachuteOpen;
     private boolean crashed;
+    private double parachuteDeployProgress; // 0.0 to 1.0, tracks deployment animation
     
     private static final double GRAVITY = 0.15;
     private static final double PARACHUTE_GRAVITY = 0.03;
     private static final double MAX_FALL_SPEED = 8.0;
-    private static final double MAX_PARACHUTE_SPEED = 2.5;
+    private static final double MAX_PARACHUTE_SPEED = 2.0; // Changed from 2.5 to 2.0
     private static final double AIR_CONTROL = 0.8;
     private static final double PARACHUTE_CONTROL = 0.5;
     private static final double SAFE_LANDING_SPEED = 3.0;
+    private static final double PARACHUTE_DEPLOY_RATE = 0.015; // Changed from 0.05 to 0.015 - much slower deployment
     
     private Color skydiverColor;
     private Color parachuteColor;
@@ -34,30 +36,57 @@ public class Player{
         this.velocityX = 0;
         this.parachuteOpen = false;
         this.crashed = false;
+        this.parachuteDeployProgress = 0.0;
         this.skydiverColor = new Color(255, 140, 0);
         this.parachuteColor = new Color(255, 50, 50);
     }
     
     public void applyGravity(){
-        double currentGravity = parachuteOpen ? PARACHUTE_GRAVITY : GRAVITY;
-        double maxSpeed = parachuteOpen ? MAX_PARACHUTE_SPEED : MAX_FALL_SPEED;
+        // Gradually deploy parachute if it's been opened
+        if(parachuteOpen && parachuteDeployProgress < 1.0){
+            parachuteDeployProgress += PARACHUTE_DEPLOY_RATE;
+            if(parachuteDeployProgress > 1.0){
+                parachuteDeployProgress = 1.0;
+            }
+        }
         
+        // Interpolate between freefall and parachute gravity based on deployment progress
+        double currentGravity = GRAVITY;
+        double maxSpeed = MAX_FALL_SPEED;
+        
+        if(parachuteOpen){
+            // Smoothly transition gravity and max speed as parachute deploys
+            currentGravity = GRAVITY + (PARACHUTE_GRAVITY - GRAVITY) * parachuteDeployProgress;
+            maxSpeed = MAX_FALL_SPEED + (MAX_PARACHUTE_SPEED - MAX_FALL_SPEED) * parachuteDeployProgress;
+        }
+        
+        // Increase downward velocity
         velocityY += currentGravity;
         
+        // Cap maximum fall speed
         if(velocityY > maxSpeed){
             velocityY = maxSpeed;
         }
         
+        // Update position
         y += velocityY;
         
+        // Apply air resistance to horizontal movement
         velocityX *= 0.98;
     }
     
     public void applyWind(double windSpeed){
-        double windEffect = parachuteOpen ? 0.15 : 0.3;
+        // Wind effect changes based on parachute deployment progress
+        double windEffect = 0.3;
+        if(parachuteOpen){
+            // Wind has less effect as parachute deploys (gradually)
+            windEffect = 0.3 + (0.15 - 0.3) * parachuteDeployProgress;
+        }
         
+        // Wind affects horizontal position
         x += windSpeed * windEffect;
         
+        // Keep player on screen
         if(x < 0){
             x = 0;
             velocityX = 0;
@@ -67,13 +96,14 @@ public class Player{
             velocityX = 0;
         }
         
+        // Apply horizontal velocity
         x += velocityX;
     }
     
     public void openParachute(){
         if(!parachuteOpen){
             parachuteOpen = true;
-            velocityY *= 0.4;
+            // Don't instantly slow down - let the deployment animation handle it
         }
     }
     
@@ -92,19 +122,33 @@ public class Player{
     
     public void drawMe(Graphics g){
         if(parachuteOpen && !crashed){
+            // Draw parachute with deployment animation
             g.setColor(parachuteColor);
-            int parachuteWidth = 80;
-            int parachuteHeight = 50;
-            int parachuteX = (int)x - 25;
-            int parachuteY = (int)y - 45;
+            int parachuteWidth = (int)(80 * parachuteDeployProgress);
+            int parachuteHeight = (int)(50 * parachuteDeployProgress);
+            int parachuteX = (int)x - (int)(25 * parachuteDeployProgress);
+            int parachuteY = (int)y - (int)(45 * parachuteDeployProgress);
             
-            g.fillArc(parachuteX, parachuteY, parachuteWidth, parachuteHeight, 0, 180);
-            
-            g.setColor(Color.WHITE);
-            g.drawLine(parachuteX + 10, parachuteY + 25, (int)x + 10, (int)y + 10);
-            g.drawLine(parachuteX + 30, parachuteY + 15, (int)x + 15, (int)y + 10);
-            g.drawLine(parachuteX + 50, parachuteY + 15, (int)x + 15, (int)y + 10);
-            g.drawLine(parachuteX + 70, parachuteY + 25, (int)x + 20, (int)y + 10);
+            if(parachuteWidth > 10){ // Only draw if parachute has started opening
+                g.fillArc(parachuteX, parachuteY, parachuteWidth, parachuteHeight, 0, 180);
+                
+                // Draw parachute lines (fade in with deployment)
+                if(parachuteDeployProgress > 0.3){
+                    g.setColor(Color.WHITE);
+                    g.drawLine(parachuteX + (int)(10 * parachuteDeployProgress), 
+                              parachuteY + (int)(25 * parachuteDeployProgress), 
+                              (int)x + 10, (int)y + 10);
+                    g.drawLine(parachuteX + (int)(30 * parachuteDeployProgress), 
+                              parachuteY + (int)(15 * parachuteDeployProgress), 
+                              (int)x + 15, (int)y + 10);
+                    g.drawLine(parachuteX + (int)(50 * parachuteDeployProgress), 
+                              parachuteY + (int)(15 * parachuteDeployProgress), 
+                              (int)x + 15, (int)y + 10);
+                    g.drawLine(parachuteX + (int)(70 * parachuteDeployProgress), 
+                              parachuteY + (int)(25 * parachuteDeployProgress), 
+                              (int)x + 20, (int)y + 10);
+                }
+            }
         }
         
         g.setColor(skydiverColor);
@@ -119,7 +163,8 @@ public class Player{
             
             g.fillOval((int)x + 7, (int)y, 16, 16);
             
-            if(parachuteOpen){
+            // Arms gradually move down as parachute deploys
+            if(parachuteOpen && parachuteDeployProgress > 0.5){
                 g.fillRect((int)x + 5, (int)y + 15, 4, 10);
                 g.fillRect((int)x + 21, (int)y + 15, 4, 10);
             } else {
@@ -153,20 +198,34 @@ public class Player{
     }
 
     public void moveLeft(){
-        double control = parachuteOpen ? PARACHUTE_CONTROL : AIR_CONTROL;
+        // Control changes based on parachute deployment progress
+        double control = AIR_CONTROL;
+        double maxHorizontalSpeed = 3;
+        
+        if(parachuteOpen){
+            control = AIR_CONTROL + (PARACHUTE_CONTROL - AIR_CONTROL) * parachuteDeployProgress;
+            maxHorizontalSpeed = 3 + (2 - 3) * parachuteDeployProgress;
+        }
+        
         velocityX -= control;
         
-        double maxHorizontalSpeed = parachuteOpen ? 2 : 3;
         if(velocityX < -maxHorizontalSpeed){
             velocityX = -maxHorizontalSpeed;
         }
     }
     
     public void moveRight(){
-        double control = parachuteOpen ? PARACHUTE_CONTROL : AIR_CONTROL;
+        // Control changes based on parachute deployment progress
+        double control = AIR_CONTROL;
+        double maxHorizontalSpeed = 3;
+        
+        if(parachuteOpen){
+            control = AIR_CONTROL + (PARACHUTE_CONTROL - AIR_CONTROL) * parachuteDeployProgress;
+            maxHorizontalSpeed = 3 + (2 - 3) * parachuteDeployProgress;
+        }
+        
         velocityX += control;
         
-        double maxHorizontalSpeed = parachuteOpen ? 2 : 3;
         if(velocityX > maxHorizontalSpeed){
             velocityX = maxHorizontalSpeed;
         }
