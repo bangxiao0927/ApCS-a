@@ -35,7 +35,18 @@ public class Game {
     
     public void startNewJump(int level){
         currentLevel = level;
-        skydiver = new Player(400, SKY_START);
+        
+        // Random spawn position for level 4+
+        int spawnX;
+        if(level >= 4){
+            // Random X position for player spawn, keeping them on screen
+            spawnX = 100 + (int)(Math.random() * 401);
+        } else {
+            // Centered spawn for easier levels
+            spawnX = 400;
+        }
+        
+        skydiver = new Player(spawnX, SKY_START);
         
         // Target size decreases with level
         int targetSize = getTargetSizeForLevel(level);
@@ -100,7 +111,7 @@ public class Game {
                 windRangeRight = 10.0;
                 break;
         }
-        return (Math.random() * (windRangeRight - windRangeLeft) * 2) - windRangeRight; //*2 for negatives
+        return Math.random() * (windRangeRight + windRangeLeft) - windRangeLeft;
     }
 
     public void update(){
@@ -122,7 +133,7 @@ public class Game {
     private void checkLanding(){
         // Check landing speed - must be slow enough to survive
         double landingSpeed = skydiver.getVelocityY();
-        boolean speedSafe = landingSpeed <= 3.0; // Safe landing speed threshold
+        boolean speedSafe = landingSpeed <= 2.5; // Safe landing speed threshold
         
         // Check if skydiver landed in the target zone
         int skydiverCenterX = skydiver.getX() + skydiver.getWidth()/2;
@@ -177,13 +188,16 @@ public class Game {
         g.fillOval(500, 150, 150, 70);
         g.fillOval(300, 80, 100, 50);
         
+        // Draw skydiver with parachute in left corner
+        drawMenuSkydiver(g, 50, 30);
+        
         // Title
         g.setColor(new Color(255, 140, 0));
         g.setFont(new Font("Arial", Font.BOLD, 72));
         g.drawString("SKY DIVER", 180, 150);
         
-        // Subtitle
-        g.setColor(Color.WHITE);
+        // Subtitle - RED
+        g.setColor(new Color(220, 20, 20)); // Bright red
         g.setFont(new Font("Arial", Font.ITALIC, 24));
         g.drawString("Master the winds, nail the landing", 200, 200);
         
@@ -195,6 +209,36 @@ public class Game {
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.PLAIN, 16));
         g.drawString("Click on a button to continue", 270, 500);
+    }
+    
+    private void drawMenuSkydiver(Graphics g, int x, int y){
+        // Draw a decorative skydiver with deployed parachute
+        Color skydiverColor = new Color(255, 140, 0);
+        Color parachuteColor = new Color(255, 50, 50);
+        
+        // Parachute canopy
+        g.setColor(parachuteColor);
+        g.fillArc(x - 15, y - 35, 60, 40, 0, 180);
+        
+        // Parachute lines
+        g.setColor(Color.WHITE);
+        g.drawLine(x, y - 10, x + 10, y + 5);
+        g.drawLine(x + 15, y - 15, x + 12, y + 5);
+        g.drawLine(x + 30, y - 15, x + 18, y + 5);
+        g.drawLine(x + 45, y - 10, x + 20, y + 5);
+        
+        // Skydiver body
+        g.setColor(skydiverColor);
+        g.fillRect(x + 10, y + 5, 8, 15); // Body
+        g.fillOval(x + 8, y - 5, 12, 12); // Head
+        
+        // Arms down (holding lines)
+        g.fillRect(x + 6, y + 8, 3, 8);
+        g.fillRect(x + 19, y + 8, 3, 8);
+        
+        // Legs
+        g.fillRect(x + 9, y + 20, 3, 8);
+        g.fillRect(x + 16, y + 20, 3, 8);
     }
     
     private void drawLevelSelect(Graphics g){
@@ -334,7 +378,7 @@ public class Game {
     private void drawWindIndicator(Graphics g){
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.PLAIN, 16));
-        g.drawString("Wind: ", 10, 30);
+        g.drawString("Wind: ", 0, 30);
         
         // Draw wind arrow
         int arrowX = 70;
@@ -353,7 +397,7 @@ public class Game {
             g.drawLine(arrowX - arrowLength, arrowY, arrowX - arrowLength + 5, arrowY + 5);
         }
         
-        g.drawString(String.format("%.1f", windSpeed), arrowX + 40, 30);
+        g.drawString(String.format("%.1f", windSpeed), arrowX + 70, 30);
     }
     
     private void drawHUD(Graphics g){
