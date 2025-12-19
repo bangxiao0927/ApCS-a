@@ -28,7 +28,7 @@ public class Screen extends JPanel implements KeyListener, MouseListener, Action
         
         addKeyListener(this);
         addMouseListener(this);
-        setFocusable(true);
+        setFocusable(true); //listener
     }
 
     public Dimension getPreferredSize() {
@@ -58,6 +58,7 @@ public class Screen extends JPanel implements KeyListener, MouseListener, Action
         repaint();
     }
     
+    // 37 left, 39 right, 32 space, 27 esc
     public void keyPressed(KeyEvent e){
         if( e.getKeyCode() == 37 ){
             // Left arrow
