@@ -3,6 +3,13 @@ import java.awt.event.*;
 import javax.swing.*;
 
 public class Screen extends JFrame implements ActionListener {
+    private static final int DIVIDER_WIDTH = 50;
+    private static final String FIRST_NAME_LABEL = "First Name";
+    private static final String LAST_NAME_LABEL = "Last Name";
+    private static final String USERNAME_LABEL = "Username";
+    private static final String DOMAIN_NAME_LABEL = "Domain Name";
+    private static final String DOMAIN_EXT_LABEL = "Domain Ext";
+
     // Instance variable - array of Contact class of size 10
     private Contact[] myList;
     private JTextArea displayArea;
@@ -82,14 +89,10 @@ public class Screen extends JFrame implements ActionListener {
     
     // Display all 10 contacts
     private void displayAllContacts() {
-        displayArea.setText("All Contacts:\n");
-        for (int i = 0; i < 50; i++) {
-            displayArea.append("=");
-        }
-        displayArea.append("\n");
-        
-        for (int i = 0; i < myList.length; i++) {
-            displayArea.append(myList[i].toString() + "\n");
+        displayArea.setText("");
+        appendHeader("All Contacts");
+        for (Contact contact : myList) {
+            displayArea.append(contact.toString() + "\n");
         }
     }
     
@@ -97,149 +100,75 @@ public class Screen extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         String searchTerm = searchField.getText().trim();
         
+        if (searchTerm.isEmpty()) {
+            displayAllContacts();
+            return;
+        }
+
         if (e.getSource() == firstNameBtn) {
-            searchByFirstName(searchTerm);
+            searchContacts(FIRST_NAME_LABEL, searchTerm);
         } else if (e.getSource() == lastNameBtn) {
-            searchByLastName(searchTerm);
+            searchContacts(LAST_NAME_LABEL, searchTerm);
         } else if (e.getSource() == usernameBtn) {
-            searchByUsername(searchTerm);
+            searchContacts(USERNAME_LABEL, searchTerm);
         } else if (e.getSource() == domainNameBtn) {
-            searchByDomainName(searchTerm);
+            searchContacts(DOMAIN_NAME_LABEL, searchTerm);
         } else if (e.getSource() == domainExtBtn) {
-            searchByDomainExtension(searchTerm);
+            searchContacts(DOMAIN_EXT_LABEL, searchTerm);
         }
     }
-    
-    // Search for contacts by first name
-    private void searchByFirstName(String query) {
-        displayArea.setText("Search Results for First Name: " + query + "\n");
-        for (int i = 0; i < 50; i++) {
-            displayArea.append("=");
-        }
-        displayArea.append("\n");
-        
-        int count = 0;
-        for (int i = 0; i < myList.length; i++) {
-            if (myList[i].getFirstName().equalsIgnoreCase(query)) {
-                displayArea.append(myList[i].toString() + "\n");
-                count++;
+
+    private void searchContacts(String label, String query) {
+        displayArea.setText("");
+        appendHeader("Search Results for " + label + ": " + query);
+
+        boolean found = false;
+        for (Contact contact : myList) {
+            if (getFieldValue(contact, label).equalsIgnoreCase(query)) {
+                displayArea.append(contact.toString() + "\n");
+                found = true;
             }
         }
-        
-        if (count == 0) {
+
+        if (!found) {
             displayArea.append("No contacts found.\n");
         }
-        
-        displaySeparatorAndAllContacts();
+
+        appendContactList();
     }
-    
-    // Search for contacts by last name
-    private void searchByLastName(String query) {
-        displayArea.setText("Search Results for Last Name: " + query + "\n");
-        for (int i = 0; i < 50; i++) {
-            displayArea.append("=");
+
+    private String getFieldValue(Contact contact, String label) {
+        if (FIRST_NAME_LABEL.equals(label)) {
+            return contact.getFirstName();
+        } else if (LAST_NAME_LABEL.equals(label)) {
+            return contact.getLastName();
+        } else if (USERNAME_LABEL.equals(label)) {
+            return contact.getEmailUsername();
+        } else if (DOMAIN_NAME_LABEL.equals(label)) {
+            return contact.getEmailDomainName();
+        } else if (DOMAIN_EXT_LABEL.equals(label)) {
+            return contact.getEmailDomainExtension();
         }
-        displayArea.append("\n");
-        
-        int count = 0;
-        for (int i = 0; i < myList.length; i++) {
-            if (myList[i].getLastName().equalsIgnoreCase(query)) {
-                displayArea.append(myList[i].toString() + "\n");
-                count++;
-            }
-        }
-        
-        if (count == 0) {
-            displayArea.append("No contacts found.\n");
-        }
-        
-        displaySeparatorAndAllContacts();
+        return "";
     }
-    
-    // Search for contacts by username
-    private void searchByUsername(String query) {
-        displayArea.setText("Search Results for Username: " + query + "\n");
-        for (int i = 0; i < 50; i++) {
-            displayArea.append("=");
-        }
+
+    private void appendContactList() {
         displayArea.append("\n");
-        
-        int count = 0;
-        for (int i = 0; i < myList.length; i++) {
-            if (myList[i].getEmailUsername().equalsIgnoreCase(query)) {
-                displayArea.append(myList[i].toString() + "\n");
-                count++;
-            }
+        appendHeader("All Contacts");
+        for (Contact contact : myList) {
+            displayArea.append(contact.toString() + "\n");
         }
-        
-        if (count == 0) {
-            displayArea.append("No contacts found.\n");
-        }
-        
-        displaySeparatorAndAllContacts();
     }
-    
-    // Search for contacts by domain name
-    private void searchByDomainName(String query) {
-        displayArea.setText("Search Results for Domain Name: " + query + "\n");
-        for (int i = 0; i < 50; i++) {
-            displayArea.append("=");
-        }
-        displayArea.append("\n");
-        
-        int count = 0;
-        for (int i = 0; i < myList.length; i++) {
-            if (myList[i].getEmailDomainName().equalsIgnoreCase(query)) {
-                displayArea.append(myList[i].toString() + "\n");
-                count++;
-            }
-        }
-        
-        if (count == 0) {
-            displayArea.append("No contacts found.\n");
-        }
-        
-        displaySeparatorAndAllContacts();
+
+    private void appendHeader(String title) {
+        displayArea.append(title + "\n");
+        appendDivider();
     }
-    
-    // Search for contacts by domain extension
-    private void searchByDomainExtension(String query) {
-        displayArea.setText("Search Results for Domain Extension: " + query + "\n");
-        for (int i = 0; i < 50; i++) {
+
+    private void appendDivider() {
+        for (int i = 0; i < DIVIDER_WIDTH; i++) {
             displayArea.append("=");
         }
         displayArea.append("\n");
-        
-        int count = 0;
-        for (int i = 0; i < myList.length; i++) {
-            if (myList[i].getEmailDomainExtension().equalsIgnoreCase(query)) {
-                displayArea.append(myList[i].toString() + "\n");
-                count++;
-            }
-        }
-        
-        if (count == 0) {
-            displayArea.append("No contacts found.\n");
-        }
-        
-        displaySeparatorAndAllContacts();
-    }
-    
-    // Display separator and all contacts at bottom
-    private void displaySeparatorAndAllContacts() {
-        displayArea.append("\n");
-        for (int i = 0; i < 50; i++) {
-            displayArea.append("=");
-        }
-        displayArea.append("\n");
-        displayArea.append("All Contacts:\n");
-        for (int i = 0; i < 50; i++) {
-            displayArea.append("=");
-        }
-        displayArea.append("\n");
-        
-        for (int i = 0; i < myList.length; i++) {
-            displayArea.append(myList[i].toString() + "\n");
-        }
     }
 }
