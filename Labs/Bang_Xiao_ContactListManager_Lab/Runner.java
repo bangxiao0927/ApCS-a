@@ -1,5 +1,5 @@
-package Labs.Bang_Xiao_ContactListManager_Lab;
-
 public class Runner {
-    
+    public static void main(String[] args) {
+        Screen screen = new Screen();
+    }
 }
