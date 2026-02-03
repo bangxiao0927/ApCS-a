@@ -1,0 +1,15 @@
+1, nothing changed
+5
+5
+
+2, nothing changed
+cat
+cat
+
+3, myArray[0] = 99;
+1
+99
+
+4,
+nothing changed because 
+it was aasinged with a new array.
