@@ -1,14 +1,14 @@
 import javax.swing.JFrame;
-public class Runner{
-	public static void main(String args[]){
-		Table game = new Table();
-		JFrame frame = new JFrame("BlackJack");
-		
-		frame.add(game);
 
+public class Runner {
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("BlackJack");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.pack();
-		frame.setVisible(true);
-	}
+        Table panel = new Table();
+        frame.add(panel);
+
+        frame.setSize(900, 600);
+        frame.setVisible(true);
+    }
 }

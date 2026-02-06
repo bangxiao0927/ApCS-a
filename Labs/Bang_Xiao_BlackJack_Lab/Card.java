@@ -1,14 +1,20 @@
-import javax.swing.JFrame;
-public class Runner{
-	public static void main(String args[]){
-		Table game = new Table();
-		JFrame frame = new JFrame("BlackJack");
-		
-		frame.add(game);
+public class Card {
+    private final String rank;   // "2".."10","J","Q","K","A"
+    private final String suit;   // "Diamonds","Hearts","Spades","Clubs"
+    private final int value;     // Ace fixed at 11 for this lab
 
+    public Card(String rank, String suit, int value) {
+        this.rank = rank;
+        this.suit = suit;
+        this.value = value;
+    }
 
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.pack();
-		frame.setVisible(true);
-	}
+    public String getRank() { return rank; }
+    public String getSuit() { return suit; }
+    public int getValue() { return value; }
+
+    @Override
+    public String toString() {
+        return rank + " of " + suit;
+    }
 }
