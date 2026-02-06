@@ -224,7 +224,7 @@ public class Table extends JPanel implements ActionListener {
     }
 
     private void drawWin(Graphics g) {
-		int idx = (int) ((System.currentTimeMillis() / 200) % winColors.length);
+		int idx = (int) ((System.currentTimeMillis() / 200) % winColors.length); // current time in milliseconds for, update for each 200 ms
 
 		g.setColor(winColors[idx]);
 		g.fillRect(0, 0, W, H);
