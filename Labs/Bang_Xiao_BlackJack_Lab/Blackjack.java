@@ -1,19 +1,19 @@
 import java.util.Random;
 
 public class Blackjack {
-    private Card[] deck;         // 52 cards
-    private int deckPos;         // next card index to deal
+    private Card[] deck;// 52 cards
+    private int deckPos;// next card index to deal
 
-    private Card[] hand;         // player hand (max 52, but practically small)
+    private Card[] hand;
     private int handSize;
 
     private boolean gameOver;
     private String endMessage;
 
-    private int totalPoints;     // starts at 20
-    private int lastWinPoints;   // points won in the last finished round
+    private int totalPoints;
+    private int lastWinPoints;// points won in the last finished round
 
-    private final Random rng = new Random();
+    private final Random random = new Random();
 
     public Blackjack() {
         totalPoints = 20;
@@ -23,7 +23,7 @@ public class Blackjack {
     }
 
     public void newGame() {
-        // cost 1 point to start a new game (even if it goes negative, depends on your teacher)
+        // 1pts for new game
         totalPoints -= 1;
 
         buildDeck();
@@ -35,11 +35,11 @@ public class Blackjack {
         endMessage = "";
         lastWinPoints = 0;
 
-        // deal 2 cards
+        //deal 2
         dealOne();
         dealOne();
 
-        // if already bust (unlikely), end
+        //if already won, end
         if (handTotal() > 21) {
             endGameBust();
         }
@@ -61,9 +61,8 @@ public class Blackjack {
     }
 
     private void shuffleDeck() {
-        // Fisher-Yates
         for (int i = deck.length - 1; i > 0; i--) {
-            int j = rng.nextInt(i + 1);
+            int j = random.nextInt(i + 1);
             Card tmp = deck[i];
             deck[i] = deck[j];
             deck[j] = tmp;
@@ -84,6 +83,7 @@ public class Blackjack {
         dealOne();
 
         int total = handTotal();
+
         if (total > 21) {
             endGameBust();
         }
@@ -132,7 +132,6 @@ public class Blackjack {
         return sum;
     }
 
-    
     public int getTotalPoints() { return totalPoints; }
     public int getLastWinPoints() { return lastWinPoints; }
     public boolean isGameOver() { return gameOver; }
