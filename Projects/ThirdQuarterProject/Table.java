@@ -1,15 +1,11 @@
-import java.awt.Graphics;
-import java.awt.Color;
-import java.util.ArrayList;
-import javax.swing.JPanel;
 import java.awt.Dimension;
-import java.awt.Font;
-
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.JButton;
-import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import javax.swing.JButton;
+import javax.swing.JPanel;
 
 
 public class Table extends JPanel implements ActionListener, MouseListener {

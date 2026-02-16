@@ -26,13 +26,31 @@ public class Stats
     * false otherwise
     */
     public boolean record(int score)
-    { /* to be implemented in part (a) */
-        
+    {
+        for (int i = 0; i < scoreList.size(); i++)
+        {
+            ScoreInfo current = scoreList.get(i);
+            if (score == current.getScore())
+            {
+                current.increment();
+                return false;
+            }
+            else if (score < current.getScore())
+            {
+                scoreList.add(i, new ScoreInfo(score));
+                return true;
+            }
+        }
+        scoreList.add(new ScoreInfo(score));
+        return true;
     }
-﻿
+
     public void recordScores(int[] stuScores)
-    { /* to be implemented in part (b) */
-﻿
+    {
+        for (int score : stuScores)
+        {
+            record(score);
+        }
     }
     
     
