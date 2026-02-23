@@ -11,26 +11,37 @@ import javax.swing.JPanel;
 public class Table extends JPanel implements ActionListener, MouseListener {
 
 	
-	private JButton getCard;
+	private JButton startButton;
+	private JButton drawButton;
+	private JButton attackButton;
+	private JButton dodgeButton;
+	private JButton takeHitButton;
+	private JButton healButton;
+	private JButton tacticButton;
+	private JButton endTurnButton;
+	private JButton switchPlayerButton;
 	private CardGame cardGame;
 
 	public Table() {
 
 			cardGame = new CardGame();	
 
-			//setup buttons
 			setLayout(null);
 
-			getCard = new JButton("Get Card");
-			getCard.setBounds(400,300,100,30); //x,y,width,height
-			getCard.addActionListener(this);
-			add(getCard);
+			startButton = createButton("Start Battle", 320, 220, 160, 40);
+			drawButton = createButton("Draw Card", 640, 360, 130, 30);
+			attackButton = createButton("Play Sha", 640, 400, 130, 30);
+			dodgeButton = createButton("Play Shan", 640, 440, 130, 30);
+			takeHitButton = createButton("Take Hit", 640, 480, 130, 30);
+			healButton = createButton("Use Peach", 500, 360, 130, 30);
+			tacticButton = createButton("Battle Orders", 500, 400, 130, 30);
+			endTurnButton = createButton("End Turn", 500, 440, 130, 30);
+			switchPlayerButton = createButton("Switch View", 500, 480, 130, 30);
 
-
-			
 			addMouseListener(this);
 
 			setFocusable(true);
+			updateButtonStates();
 
 
 	}
@@ -52,15 +63,52 @@ public class Table extends JPanel implements ActionListener, MouseListener {
 
 
 	public void actionPerformed(ActionEvent e) {
-		if( e.getSource() == getCard ){
-			
-			//add a card to the playersDeck
-			cardGame.getCard();
-
-			//remove the top from the deck
-			//call repaint to update the paintComponent
+		Object src = e.getSource();
+		if (src == startButton) {
+			cardGame.startGame();
+		} else if (src == drawButton) {
+			cardGame.drawForActivePlayer();
+		} else if (src == attackButton) {
+			cardGame.playAttack();
+		} else if (src == dodgeButton) {
+			cardGame.playDodgeFromViewingPlayer();
+		} else if (src == takeHitButton) {
+			cardGame.resolveAttackWithoutDodge();
+		} else if (src == healButton) {
+			cardGame.playPeachFromViewingPlayer();
+		} else if (src == tacticButton) {
+			cardGame.playBattleOrders();
+		} else if (src == endTurnButton) {
+			cardGame.endTurn();
+		} else if (src == switchPlayerButton) {
+			cardGame.cycleView();
 		}
+		updateButtonStates();
 		repaint();
+	}
+
+	private JButton createButton(String text, int x, int y, int width, int height) {
+		JButton button = new JButton(text);
+		button.setBounds(x, y, width, height);
+		button.addActionListener(this);
+		add(button);
+		return button;
+	}
+
+	private void updateButtonStates() {
+		CardGame.GameState state = cardGame.getGameState();
+		boolean playing = state == CardGame.GameState.PLAYING;
+		boolean awaiting = state == CardGame.GameState.AWAITING_DODGE;
+
+		startButton.setVisible(state == CardGame.GameState.MENU || state == CardGame.GameState.GAME_OVER);
+		drawButton.setEnabled(playing && !cardGame.hasDrawnThisTurn());
+		attackButton.setEnabled(playing && cardGame.canActiveAttack());
+		dodgeButton.setEnabled(awaiting && cardGame.canViewingPlayerDodge());
+		takeHitButton.setEnabled(awaiting && cardGame.isViewingPlayerTargeted());
+		healButton.setEnabled(cardGame.canViewingPlayerHeal());
+		tacticButton.setEnabled(cardGame.canViewingPlayTactic());
+		endTurnButton.setEnabled(cardGame.canEndTurn());
+		switchPlayerButton.setEnabled(state != CardGame.GameState.MENU);
 	}
 
 	public void mousePressed(MouseEvent e) {
