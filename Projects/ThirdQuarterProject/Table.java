@@ -7,7 +7,7 @@ import java.awt.event.MouseListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
-
+//table
 public class Table extends JPanel implements ActionListener, MouseListener {
 
 	
