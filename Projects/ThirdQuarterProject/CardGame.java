@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 
+//game logic and state management for the card game
 public class CardGame {
 	public enum GameState {
 		MENU,
