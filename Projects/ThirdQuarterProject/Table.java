@@ -28,15 +28,15 @@ public class Table extends JPanel implements ActionListener, MouseListener {
 
 			setLayout(null);
 
-			startButton = createButton("Start Battle", 320, 220, 160, 40);
-			drawButton = createButton("Draw Card", 640, 360, 130, 30);
-			attackButton = createButton("Play Sha", 640, 400, 130, 30);
-			dodgeButton = createButton("Play Shan", 640, 440, 130, 30);
-			takeHitButton = createButton("Take Hit", 640, 480, 130, 30);
-			healButton = createButton("Use Peach", 500, 360, 130, 30);
-			tacticButton = createButton("Battle Orders", 500, 400, 130, 30);
-			endTurnButton = createButton("End Turn", 500, 440, 130, 30);
-			switchPlayerButton = createButton("Switch View", 500, 480, 130, 30);
+			startButton = createButton("Start Battle", 440, 560, 200, 50);
+			drawButton = createButton("Draw Card", 820, 300, 200, 40);
+			attackButton = createButton("Play Sha", 820, 350, 200, 40);
+			dodgeButton = createButton("Play Shan", 820, 400, 200, 40);
+			takeHitButton = createButton("Take Hit", 820, 450, 200, 40);
+			healButton = createButton("Use Peach", 820, 500, 200, 40);
+			tacticButton = createButton("Battle Orders", 820, 550, 200, 40);
+			endTurnButton = createButton("End Turn", 820, 600, 200, 40);
+			switchPlayerButton = createButton("Switch View", 820, 650, 200, 40);
 
 			addMouseListener(this);
 
@@ -48,7 +48,7 @@ public class Table extends JPanel implements ActionListener, MouseListener {
 	
 	public Dimension getPreferredSize() {
 		//Sets the size of the panel
-		return new Dimension(800,600);
+		return new Dimension(1080, 1080);
 	}
 
 	public void paintComponent(Graphics g){

@@ -106,7 +106,7 @@ public class CardGame {
 
 	public void drawGame(Graphics g) {
 		g.setColor(new Color(4, 92, 35));
-		g.fillRect(0, 0, 800, 600);
+		g.fillRect(0, 0, 1080, 1080);
 
 		if (gameState == GameState.MENU) {
 			drawMenu(g);
@@ -124,19 +124,19 @@ public class CardGame {
 
 	private void drawMenu(Graphics g) {
 		g.setColor(Color.black);
-		g.fillRect(0, 0, 800, 600);
+		g.fillRect(0, 0, 1080, 1080);
 		g.setColor(Color.ORANGE);
 		Font title = new Font("Serif", Font.BOLD, 48);
 		g.setFont(title);
-		g.drawString("Mini 三国杀", 240, 200);
+		g.drawString("Mini 三国杀", 360, 300);
 		Font body = new Font("Arial", Font.PLAIN, 20);
 		g.setFont(body);
 		g.setColor(Color.white);
-		g.drawString("Use the buttons to draw, attack (Sha), dodge (Shan), and heal (Peach).", 120, 280);
-		g.drawString("Unique hero abilities:", 120, 320);
-		g.drawString("Zhao Yun converts a Dodge into an Attack once per turn.", 140, 350);
-		g.drawString("Zhuge Liang draws a bonus card when he dodges.", 140, 380);
-		g.drawString("Sun Shangxiang heals 1 HP after dealing damage once per turn.", 140, 410);
+		g.drawString("Use the buttons to draw, attack (Sha), dodge (Shan), and heal (Peach).", 140, 420);
+		g.drawString("Unique hero abilities:", 140, 460);
+		g.drawString("Zhao Yun converts a Dodge into an Attack once per turn.", 160, 500);
+		g.drawString("Zhuge Liang draws a bonus card when he dodges.", 160, 530);
+		g.drawString("Sun Shangxiang heals 1 HP after dealing damage once per turn.", 160, 560);
 	}
 
 	private void drawGameOver(Graphics g) {
@@ -144,12 +144,12 @@ public class CardGame {
 		g.setColor(new Color(255, 215, 0));
 		Font title = new Font("Serif", Font.BOLD, 44);
 		g.setFont(title);
-		g.drawString("Battle Resolved", 230, 220);
+		g.drawString("Battle Resolved", 320, 360);
 		g.setColor(Color.white);
 		Font body = new Font("Arial", Font.PLAIN, 22);
 		g.setFont(body);
-		g.drawString(statusMessage, 150, 260);
-		g.drawString("Press Start to begin a new duel.", 200, 300);
+		g.drawString(statusMessage, 260, 420);
+		g.drawString("Press Start to begin a new duel.", 260, 460);
 	}
 
 	private void drawPlayers(Graphics g) {
@@ -157,7 +157,7 @@ public class CardGame {
 		g.setFont(infoFont);
 		for (int i = 0; i < players.size(); i++) {
 			Player p = players.get(i);
-			int baseY = 40 + (i * 70);
+			int baseY = 60 + (i * 90);
 			Color labelColor = Color.white;
 			if (p.isEliminated()) {
 				labelColor = Color.GRAY;
@@ -175,15 +175,15 @@ public class CardGame {
 			if (i == viewingPlayerIndex) {
 				flag += " [Viewing]";
 			}
-			g.drawString(p.getHeroName() + flag, 30, baseY);
-			g.drawString("HP: " + p.getHp() + "/" + p.getMaxHp() + " | Cards: " + p.getHandSize(), 30, baseY + 20);
+			g.drawString(p.getHeroName() + flag, 40, baseY);
+			g.drawString("HP: " + p.getHp() + "/" + p.getMaxHp() + " | Cards: " + p.getHandSize(), 40, baseY + 26);
 			if (gameState == GameState.AWAITING_DODGE && pendingTarget == p) {
-				g.drawString("Targeted by Sha!", 30, baseY + 40);
+				g.drawString("Targeted by Sha!", 40, baseY + 52);
 			}
 		}
 
 		g.setColor(Color.white);
-		g.drawString("Deck: " + deck.size() + " | Discard: " + discardPile.size(), 600, 40);
+		g.drawString("Deck: " + deck.size() + " | Discard: " + discardPile.size(), 820, 60);
 	}
 
 	private void drawViewingHand(Graphics g) {
@@ -197,12 +197,16 @@ public class CardGame {
 		g.setColor(Color.white);
 		Font header = new Font("Arial", Font.BOLD, 20);
 		g.setFont(header);
-		g.drawString("Viewing " + viewing.getHeroName() + "'s hand:", 20, 340);
-		int x = 20;
-		int y = 360;
+		g.drawString("Viewing " + viewing.getHeroName() + "'s hand:", 40, 560);
+		int x = 40;
+		int y = 580;
 		for (Card card : viewing.getHand()) {
 			card.drawMe(g, x, y);
-			x += 130;
+			x += 180;
+			if (x + 160 > 820) {
+				x = 40;
+				y += 230;
+			}
 		}
 	}
 
@@ -210,7 +214,7 @@ public class CardGame {
 		g.setColor(Color.white);
 		Font statusFont = new Font("Arial", Font.PLAIN, 18);
 		g.setFont(statusFont);
-		g.drawString(statusMessage, 20, 540);
+		g.drawString(statusMessage, 40, 1040);
 	}
 
 	public GameState getGameState() {
@@ -266,10 +270,10 @@ public class CardGame {
 		}
 		Player target = selectNextTarget();
 		if (target == null) {
+			discardPile.add(attackCard);
 			statusMessage = attacker.getHeroName() + " stands unopposed.";
 			return;
 		}
-		discardPile.add(attackCard);
 		pendingAttackCard = attackCard;
 		pendingTarget = target;
 		gameState = GameState.AWAITING_DODGE;
@@ -291,6 +295,7 @@ public class CardGame {
 			return;
 		}
 		discardPile.add(dodge);
+		discardPendingAttack();
 		statusMessage = viewing.getHeroName() + " dodges the attack.";
 		if (viewing.canStrategistDraw()) {
 			Card bonus = drawCard(viewing);
@@ -371,6 +376,7 @@ public class CardGame {
 			gameState = GameState.GAME_OVER;
 			return;
 		}
+		viewingPlayerIndex = activePlayerIndex;
 		statusMessage = getActivePlayer().getHeroName() + " takes the initiative.";
 	}
 
@@ -463,9 +469,7 @@ public class CardGame {
 	}
 
 	private void applyDamage(Player target, int dmg) {
-		if (pendingAttackCard != null) {
-			discardPile.add(pendingAttackCard);
-		}
+		discardPendingAttack();
 		Player attacker = getActivePlayer();
 		if (target == null) {
 			return;
@@ -480,6 +484,12 @@ public class CardGame {
 			attacker.heal(1);
 			attacker.markHealUsed();
 			statusMessage += " " + attacker.getHeroName() + "'s Battle Poise heals 1 HP.";
+		}
+	}
+
+	private void discardPendingAttack() {
+		if (pendingAttackCard != null) {
+			discardPile.add(pendingAttackCard);
 		}
 	}
 

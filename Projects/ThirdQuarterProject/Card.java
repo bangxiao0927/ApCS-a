@@ -55,20 +55,20 @@ public class Card {
 
 
 	 public void drawMe(Graphics g, int x, int y){
+		int cardWidth = 160;
+		int cardHeight = 210;
 
-      //draw card outline
-      g.setColor(Color.white);
-      g.fillRect(x,y,120,150);
-      
-      g.setColor(Color.black);      
-      g.drawRect(x,y,120,150);
-
-      
+		//draw card outline
+		g.setColor(Color.white);
+		g.fillRect(x, y, cardWidth, cardHeight);
+		
+		g.setColor(Color.black);      
+		g.drawRect(x, y, cardWidth, cardHeight);
 
 		//draw suit
-		g.drawImage(suitImage, x+2, y, null);
+		g.drawImage(suitImage, x + 4, y + 4, null);
 	   
-      //Set Font to use with drawString   
+	      //Set Font to use with drawString   
 		Font font = new Font("Arial", Font.PLAIN, 36);
 		g.setFont(font);
 
@@ -77,14 +77,14 @@ public class Card {
       }
       
       
-		g.drawString(this.name+"", x+20, y + 80);
+		g.drawString(this.name+"", x+20, y + 110);
 
 		Font subFont = new Font("Arial", Font.PLAIN, 18);
 		g.setFont(subFont);
 		g.setColor(Color.black);
-		g.drawString(type.getLabel(), x+20, y + 110);
+		g.drawString(type.getLabel(), x+20, y + 150);
 		if (!description.isEmpty()) {
-			g.drawString(description, x+20, y + 135);
+			g.drawString(description, x+20, y + 180);
 		}
 
          
