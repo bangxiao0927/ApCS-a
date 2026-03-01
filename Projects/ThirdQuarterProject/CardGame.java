@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 //game logic and state management for the card game
+//note
 public class CardGame {
 	public enum GameState {
 		MENU,
