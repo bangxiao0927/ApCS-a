@@ -81,7 +81,12 @@ public class Table extends JPanel implements ActionListener, MouseListener {
 		} else if (src == endTurnButton) {
 			cardGame.endTurn();
 		} else if (src == switchPlayerButton) {
-			cardGame.cycleView();
+			if (cardGame.getGameState() == CardGame.GameState.PLAYING) {
+				cardGame.endTurn();
+				cardGame.cycleView();
+			} else {
+				cardGame.cycleView();
+			}
 		}
 		updateButtonStates();
 		repaint();
