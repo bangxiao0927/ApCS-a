@@ -74,7 +74,15 @@ public class MusicDownloads
  public void updateDownloads(List<String> titles) 
  {  
     //Part B
-	
+	for (String title : titles) {
+		DownloadInfo info = getDownloadInfo(title);
+		if (info != null) {
+			info.incrementTimesDownloaded();
+		} else {
+			DownloadInfo newInfo = new DownloadInfo(title);
+			downloadList.add(newInfo);
+		}
+	}
  } 
  
  public void printList()
