@@ -46,8 +46,12 @@ public class MusicDownloads
  public DownloadInfo getDownloadInfo(String title) 
  {
 	//Part A
-
-
+	for (DownloadInfo info : downloadList) {
+		if (info.getTitle().equals(title)) {
+			return info;
+		}
+	}
+	return null;
  } 
  
  
