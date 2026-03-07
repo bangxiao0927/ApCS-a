@@ -2,13 +2,15 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
 //table
-public class Table extends JPanel implements ActionListener, MouseListener {
+public class Table extends JPanel implements ActionListener, MouseListener, KeyListener {
 
 	
 	private JButton startButton;
@@ -19,7 +21,6 @@ public class Table extends JPanel implements ActionListener, MouseListener {
 	private JButton healButton;
 	private JButton tacticButton;
 	private JButton endTurnButton;
-	private JButton switchPlayerButton;
 	private CardGame cardGame;
 
 	public Table() {
@@ -34,13 +35,14 @@ public class Table extends JPanel implements ActionListener, MouseListener {
 			dodgeButton = createButton("Play Shan", 820, 400, 200, 40);
 			takeHitButton = createButton("Take Hit", 820, 450, 200, 40);
 			healButton = createButton("Use Peach", 820, 500, 200, 40);
-			tacticButton = createButton("Battle Orders", 820, 550, 200, 40);
+			tacticButton = createButton("Use Tactic", 820, 550, 200, 40);
 			endTurnButton = createButton("End Turn", 820, 600, 200, 40);
-			switchPlayerButton = createButton("Switch View", 820, 650, 200, 40);
 
 			addMouseListener(this);
+			addKeyListener(this);
 
 			setFocusable(true);
+			requestFocusInWindow();
 			updateButtonStates();
 
 
@@ -77,16 +79,9 @@ public class Table extends JPanel implements ActionListener, MouseListener {
 		} else if (src == healButton) {
 			cardGame.playPeachFromViewingPlayer();
 		} else if (src == tacticButton) {
-			cardGame.playBattleOrders();
+			cardGame.playTacticFromViewingPlayer();
 		} else if (src == endTurnButton) {
 			cardGame.endTurn();
-		} else if (src == switchPlayerButton) {
-			if (cardGame.getGameState() == CardGame.GameState.PLAYING) {
-				cardGame.endTurn();
-				cardGame.cycleView();
-			} else {
-				cardGame.cycleView();
-			}
 		}
 		updateButtonStates();
 		repaint();
@@ -95,6 +90,7 @@ public class Table extends JPanel implements ActionListener, MouseListener {
 	private JButton createButton(String text, int x, int y, int width, int height) {
 		JButton button = new JButton(text);
 		button.setBounds(x, y, width, height);
+		button.setFocusable(false);
 		button.addActionListener(this);
 		add(button);
 		return button;
@@ -113,7 +109,6 @@ public class Table extends JPanel implements ActionListener, MouseListener {
 		healButton.setEnabled(cardGame.canViewingPlayerHeal());
 		tacticButton.setEnabled(cardGame.canViewingPlayTactic());
 		endTurnButton.setEnabled(cardGame.canEndTurn());
-		switchPlayerButton.setEnabled(state != CardGame.GameState.MENU);
 	}
 
 	public void mousePressed(MouseEvent e) {
@@ -124,7 +119,18 @@ public class Table extends JPanel implements ActionListener, MouseListener {
     public void mouseReleased(MouseEvent e) {}
     public void mouseEntered(MouseEvent e) {}
     public void mouseExited(MouseEvent e) {}
-    public void mouseClicked(MouseEvent e) {}
+	public void mouseClicked(MouseEvent e) {}
+
+	public void keyPressed(KeyEvent e) {
+		if (e.getKeyChar() == 'c' || e.getKeyChar() == 'C') {
+			cardGame.applyCheatForViewingPlayer();
+			updateButtonStates();
+			repaint();
+		}
+	}
+
+	public void keyReleased(KeyEvent e) {}
+	public void keyTyped(KeyEvent e) {}
 
 	
 	
