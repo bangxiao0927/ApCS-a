@@ -24,6 +24,16 @@ public class CardGame {
 	private Card pendingAttackCard;
 	private boolean hasDrawnThisTurn;
 	private String statusMessage;
+	private int turnCount;
+	private int drawsTaken;
+	private int attacksPlayed;
+	private int dodgesPlayed;
+	private int healsUsed;
+	private int tacticsPlayed;
+	private String winnerMessage;
+	private String scoreMessage;
+	private String roleRevealMessage;
+	private String skipNotice;
 
 	public CardGame() {
 		deck = new ArrayList<Card>();
@@ -44,6 +54,16 @@ public class CardGame {
 		hasDrawnThisTurn = false;
 		pendingAttackCard = null;
 		pendingTarget = null;
+		turnCount = 1;
+		drawsTaken = 0;
+		attacksPlayed = 0;
+		dodgesPlayed = 0;
+		healsUsed = 0;
+		tacticsPlayed = 0;
+		winnerMessage = "";
+		scoreMessage = "";
+		roleRevealMessage = "";
+		skipNotice = null;
 		statusMessage = getActivePlayer().getHeroName() + " draws first blood.";
 	}
 
@@ -60,15 +80,17 @@ public class CardGame {
 			deck.add(new Card(8 + i, "Peach", "hearts", CardType.HEAL, "Heal"));
 		}
 		// tactical support cards unique to this build
-		deck.add(new Card(1, "Battle Orders", "hearts", CardType.TACTIC, "+1 draw"));
-		deck.add(new Card(2, "Battle Orders", "hearts", CardType.TACTIC, "+1 draw"));
+		deck.add(new Card(1, "Battle Orders", "hearts", CardType.TACTIC, "+2 draw"));
+		deck.add(new Card(2, "Battle Orders", "hearts", CardType.TACTIC, "+2 draw"));
+		deck.add(new Card(3, "Forced March", "hearts", CardType.TACTIC, "Discard or skip"));
+		deck.add(new Card(4, "Forced March", "hearts", CardType.TACTIC, "Discard or skip"));
 	}
 
 	private void setupPlayers() {
 		players.clear();
-		players.add(new Player("Player 1", "Zhao Yun", 4, Player.Ability.DRAGON_CONVERT));
-		players.add(new Player("Player 2", "Zhuge Liang", 3, Player.Ability.STRATEGIST_DRAW));
-		players.add(new Player("Player 3", "Sun Shangxiang", 4, Player.Ability.VENGEFUL_HEAL));
+		players.add(new Player("Player 1", "Zhao Yun", 4, Player.Ability.DRAGON_CONVERT, Player.Role.LEADER));
+		players.add(new StrategistPlayer("Player 2", "Zhuge Liang", 3, Player.Role.REBEL));
+		players.add(new Player("Player 3", "Sun Shangxiang", 4, Player.Ability.VENGEFUL_HEAL, Player.Role.LOYALIST));
 	}
 
 	private void dealOpeningHands() {
@@ -134,10 +156,12 @@ public class CardGame {
 		g.setFont(body);
 		g.setColor(Color.white);
 		g.drawString("Use the buttons to draw, attack (Sha), dodge (Shan), and heal (Peach).", 140, 420);
-		g.drawString("Unique hero abilities:", 140, 460);
-		g.drawString("Zhao Yun converts a Dodge into an Attack once per turn.", 160, 500);
-		g.drawString("Zhuge Liang draws a bonus card when he dodges.", 160, 530);
-		g.drawString("Sun Shangxiang heals 1 HP after dealing damage once per turn.", 160, 560);
+		g.drawString("Hidden roles: Leader, Rebel, Loyalist. Defeat the opposing faction.", 140, 450);
+		g.drawString("Unique hero abilities:", 140, 490);
+		g.drawString("Zhao Yun converts a Dodge into an Attack once per turn.", 160, 530);
+		g.drawString("Zhuge Liang draws a bonus card when he dodges.", 160, 560);
+		g.drawString("Sun Shangxiang heals 1 HP after dealing damage once per turn.", 160, 590);
+		g.drawString("Cheat key: press 'C' to grant the viewing hero a bonus draw + heal.", 140, 630);
 	}
 
 	private void drawGameOver(Graphics g) {
@@ -149,8 +173,12 @@ public class CardGame {
 		g.setColor(Color.white);
 		Font body = new Font("Arial", Font.PLAIN, 22);
 		g.setFont(body);
-		g.drawString(statusMessage, 260, 420);
-		g.drawString("Press Start to begin a new duel.", 260, 460);
+		g.drawString(winnerMessage, 200, 420);
+		g.drawString(scoreMessage, 200, 450);
+		g.drawString("Turns: " + turnCount + " | Draws: " + drawsTaken + " | Attacks: " + attacksPlayed
+				+ " | Dodges: " + dodgesPlayed + " | Heals: " + healsUsed + " | Tactics: " + tacticsPlayed, 200, 480);
+		g.drawString(roleRevealMessage, 200, 510);
+		g.drawString("Press Start to begin a new duel.", 260, 560);
 	}
 
 	private void drawPlayers(Graphics g) {
@@ -177,7 +205,9 @@ public class CardGame {
 				flag += " [Viewing]";
 			}
 			g.drawString(p.getHeroName() + flag, 40, baseY);
-			g.drawString("HP: " + p.getHp() + "/" + p.getMaxHp() + " | Cards: " + p.getHandSize(), 40, baseY + 26);
+			boolean revealRole = gameState == GameState.GAME_OVER || i == viewingPlayerIndex;
+			String roleLabel = revealRole ? p.getRole().getLabel() : "Hidden";
+			g.drawString("HP: " + p.getHp() + "/" + p.getMaxHp() + " | Cards: " + p.getHandSize() + " | Role: " + roleLabel, 40, baseY + 26);
 			if (gameState == GameState.AWAITING_DODGE && pendingTarget == p) {
 				g.drawString("Targeted by Sha!", 40, baseY + 52);
 			}
@@ -198,9 +228,12 @@ public class CardGame {
 		g.setColor(Color.white);
 		Font header = new Font("Arial", Font.BOLD, 20);
 		g.setFont(header);
-		g.drawString("Viewing " + viewing.getHeroName() + "'s hand:", 40, 560);
+		g.drawString("Viewing " + viewing.getHeroName() + " (" + viewing.getRole().getLabel() + ") hand:", 40, 560);
+		Font abilityFont = new Font("Arial", Font.PLAIN, 18);
+		g.setFont(abilityFont);
+		g.drawString("Ability: " + getAbilityLabel(viewing), 40, 585);
 		int x = 40;
-		int y = 580;
+		int y = 610;
 		for (Card card : viewing.getHand()) {
 			card.drawMe(g, x, y);
 			x += 180;
@@ -209,6 +242,20 @@ public class CardGame {
 				y += 230;
 			}
 		}
+	}
+
+	private String getAbilityLabel(Player player) {
+		if (player == null) {
+			return "None";
+		}
+		Player.Ability ability = player.getAbility();
+		if (ability == Player.Ability.DRAGON_CONVERT) {
+			return "Dragon Convert";
+		}
+		if (ability == Player.Ability.VENGEFUL_HEAL) {
+			return "Vengeful Heal";
+		}
+		return "None";
 	}
 
 	private void drawStatus(Graphics g) {
@@ -252,6 +299,7 @@ public class CardGame {
 			return;
 		}
 		hasDrawnThisTurn = true;
+		drawsTaken++;
 		statusMessage = active.getHeroName() + " drew " + card.getName() + ".";
 	}
 
@@ -267,8 +315,9 @@ public class CardGame {
 				statusMessage = attacker.getHeroName() + " has no Sha available.";
 				return;
 			}
-			statusMessage = attacker.getHeroName() + " converts a Shan into Sha!";
+			statusMessage = attacker.getHeroName() + " uses Dragon Convert to turn Shan into Sha!";
 		}
+		attacksPlayed++;
 		Player target = selectNextTarget();
 		if (target == null) {
 			discardPile.add(attackCard);
@@ -278,6 +327,7 @@ public class CardGame {
 		pendingAttackCard = attackCard;
 		pendingTarget = target;
 		gameState = GameState.AWAITING_DODGE;
+		focusViewOnPlayer(target);
 		statusMessage = attacker.getHeroName() + " plays Sha targeting " + target.getHeroName() + ".";
 	}
 
@@ -296,13 +346,19 @@ public class CardGame {
 			return;
 		}
 		discardPile.add(dodge);
+		dodgesPlayed++;
 		discardPendingAttack();
 		statusMessage = viewing.getHeroName() + " dodges the attack.";
-		if (viewing.canStrategistDraw()) {
+		int bonusDraws = viewing.getDodgeBonusDraw();
+		for (int i = 0; i < bonusDraws; i++) {
 			Card bonus = drawCard(viewing);
 			if (bonus != null) {
+				drawsTaken++;
 				statusMessage += " Strategy bonus draws " + bonus.getName() + ".";
 			}
+		}
+		if (bonusDraws > 0) {
+			statusMessage += " Ability triggered: Strategy Draw.";
 		}
 		clearPendingAttack();
 	}
@@ -332,10 +388,11 @@ public class CardGame {
 		}
 		discardPile.add(healCard);
 		viewing.heal(1);
+		healsUsed++;
 		statusMessage = viewing.getHeroName() + " uses a Peach to heal.";
 	}
 
-	public void playBattleOrders() {
+	public void playTacticFromViewingPlayer() {
 		if (players.isEmpty()) {
 			return;
 		}
@@ -345,22 +402,17 @@ public class CardGame {
 		}
 		Card tactic = viewing.playCard(CardType.TACTIC);
 		if (tactic == null) {
-			statusMessage = "No Battle Orders card available.";
+			statusMessage = "No tactic card available.";
 			return;
 		}
 		discardPile.add(tactic);
-		Card first = drawCard(viewing);
-		Card second = drawCard(viewing);
-		statusMessage = viewing.getHeroName() + " rallies troops and draws extra cards.";
-		if (first != null) {
-			statusMessage += " (" + first.getName();
-			if (second != null) {
-				statusMessage += ", " + second.getName();
-			}
-			statusMessage += ")";
-		}
-		if (gameState == GameState.PLAYING && viewing == getActivePlayer()) {
-			hasDrawnThisTurn = true; // using tactic counts as draw phase
+		tacticsPlayed++;
+		if ("Battle Orders".equals(tactic.getName())) {
+			applyBattleOrders(viewing);
+		} else if ("Forced March".equals(tactic.getName())) {
+			applyForcedMarch(viewing);
+		} else {
+			statusMessage = viewing.getHeroName() + " plays an unknown tactic.";
 		}
 	}
 
@@ -373,12 +425,20 @@ public class CardGame {
 		hasDrawnThisTurn = false;
 		activePlayerIndex = findNextAliveIndex(activePlayerIndex);
 		if (activePlayerIndex == -1) {
-			statusMessage = "No one left standing.";
+			winnerMessage = "No one left standing.";
+			scoreMessage = "Score: 0 total HP remaining";
+			roleRevealMessage = buildRoleRevealMessage();
+			statusMessage = winnerMessage;
 			gameState = GameState.GAME_OVER;
 			return;
 		}
+		turnCount++;
 		viewingPlayerIndex = activePlayerIndex;
 		statusMessage = getActivePlayer().getHeroName() + " takes the initiative.";
+		if (skipNotice != null) {
+			statusMessage += " " + skipNotice;
+			skipNotice = null;
+		}
 	}
 
 	public void cycleView() {
@@ -434,6 +494,29 @@ public class CardGame {
 		return gameState == GameState.PLAYING;
 	}
 
+	public void applyCheatForViewingPlayer() {
+		if (gameState == GameState.MENU) {
+			return;
+		}
+		if (players.isEmpty()) {
+			return;
+		}
+		Player viewing = getViewingPlayer();
+		if (viewing == null) {
+			return;
+		}
+		if (viewing.isEliminated()) {
+			statusMessage = "Eliminated heroes cannot accept reinforcements.";
+			return;
+		}
+		Card bonus = drawCard(viewing);
+		if (bonus != null) {
+			drawsTaken++;
+		}
+		viewing.heal(1);
+		statusMessage = "Cheat invoked: " + viewing.getHeroName() + " gains a bonus draw and 1 HP.";
+	}
+
 	private Player getViewingPlayer() {
 		if (players.isEmpty()) {
 			return null;
@@ -469,6 +552,61 @@ public class CardGame {
 		return null;
 	}
 
+	private Player selectNextTargetFromIndex(int startIndex) {
+		if (players.size() <= 1) {
+			return null;
+		}
+		for (int i = 1; i < players.size(); i++) {
+			int candidateIndex = (startIndex + i) % players.size();
+			Player candidate = players.get(candidateIndex);
+			if (!candidate.isEliminated()) {
+				return candidate;
+			}
+		}
+		return null;
+	}
+
+	private void applyBattleOrders(Player viewing) {
+		Card first = drawCard(viewing);
+		Card second = drawCard(viewing);
+		statusMessage = viewing.getHeroName() + " rallies troops and draws extra cards.";
+		if (first != null || second != null) {
+			statusMessage += " (";
+			if (first != null) {
+				drawsTaken++;
+				statusMessage += first.getName();
+			}
+			if (second != null) {
+				drawsTaken++;
+				if (first != null) {
+					statusMessage += ", ";
+				}
+				statusMessage += second.getName();
+			}
+			statusMessage += ")";
+		}
+		if (gameState == GameState.PLAYING && viewing == getActivePlayer()) {
+			hasDrawnThisTurn = true; // using tactic counts as draw phase
+		}
+	}
+
+	private void applyForcedMarch(Player viewing) {
+		Player target = selectNextTargetFromIndex(viewingPlayerIndex);
+		if (target == null) {
+			statusMessage = viewing.getHeroName() + " has no target for Forced March.";
+			return;
+		}
+		Card discarded = target.discardRandomCard();
+		if (discarded != null) {
+			discardPile.add(discarded);
+			statusMessage = viewing.getHeroName() + " orders a Forced March, discarding " + target.getHeroName()
+					+ "'s " + discarded.getName() + ".";
+			return;
+		}
+		target.markSkipTurn();
+		statusMessage = viewing.getHeroName() + " orders a Forced March. " + target.getHeroName() + " will skip their next turn.";
+	}
+
 	private void applyDamage(Player target, int dmg) {
 		discardPendingAttack();
 		Player attacker = getActivePlayer();
@@ -484,7 +622,7 @@ public class CardGame {
 		if (attacker != null && attacker.canHealAfterDamage()) {
 			attacker.heal(1);
 			attacker.markHealUsed();
-			statusMessage += " " + attacker.getHeroName() + "'s Battle Poise heals 1 HP.";
+			statusMessage += " " + attacker.getHeroName() + "'s Vengeful Heal restores 1 HP.";
 		}
 	}
 
@@ -499,24 +637,49 @@ public class CardGame {
 		pendingTarget = null;
 		if (gameState != GameState.GAME_OVER) {
 			gameState = GameState.PLAYING;
+			Player active = getActivePlayer();
+			if (active != null) {
+				viewingPlayerIndex = activePlayerIndex;
+			}
+		}
+	}
+
+	private void focusViewOnPlayer(Player player) {
+		if (player == null || players.isEmpty()) {
+			return;
+		}
+		int index = players.indexOf(player);
+		if (index >= 0) {
+			viewingPlayerIndex = index;
 		}
 	}
 
 	private void checkForVictory() {
-		int alive = 0;
-		Player lastAlive = null;
+		boolean leaderAlive = false;
+		int rebelsAlive = 0;
 		for (Player player : players) {
-			if (!player.isEliminated()) {
-				alive++;
-				lastAlive = player;
+			if (player.isEliminated()) {
+				continue;
+			}
+			if (player.getRole() == Player.Role.LEADER) {
+				leaderAlive = true;
+			} else if (player.getRole() == Player.Role.REBEL) {
+				rebelsAlive++;
 			}
 		}
-		if (alive <= 1) {
-			if (lastAlive != null) {
-				statusMessage = lastAlive.getHeroName() + " wins the duel!";
-			} else {
-				statusMessage = "All heroes have fallen.";
-			}
+		if (!leaderAlive) {
+			winnerMessage = rebelsAlive > 0 ? "Rebels win - the Leader has fallen." : "All factions collapse.";
+			scoreMessage = buildScoreMessage(false);
+			roleRevealMessage = buildRoleRevealMessage();
+			statusMessage = winnerMessage;
+			gameState = GameState.GAME_OVER;
+			return;
+		}
+		if (rebelsAlive == 0) {
+			winnerMessage = "Leader and Loyalist win - rebels defeated.";
+			scoreMessage = buildScoreMessage(true);
+			roleRevealMessage = buildRoleRevealMessage();
+			statusMessage = winnerMessage;
 			gameState = GameState.GAME_OVER;
 		}
 	}
@@ -525,13 +688,48 @@ public class CardGame {
 		if (players.isEmpty()) {
 			return -1;
 		}
+		skipNotice = null;
 		for (int i = 1; i <= players.size(); i++) {
 			int idx = (startIndex + i) % players.size();
-			if (!players.get(idx).isEliminated()) {
-				players.get(idx).resetForNewTurn();
-				return idx;
+			Player candidate = players.get(idx);
+			if (candidate.isEliminated()) {
+				continue;
 			}
+			if (candidate.shouldSkipTurn()) {
+				candidate.consumeSkipTurn();
+				skipNotice = candidate.getHeroName() + " skips the turn.";
+				continue;
+			}
+			candidate.resetForNewTurn();
+			return idx;
 		}
 		return -1;
+	}
+
+	private String buildRoleRevealMessage() {
+		StringBuilder sb = new StringBuilder("Roles: ");
+		for (int i = 0; i < players.size(); i++) {
+			Player player = players.get(i);
+			sb.append(player.getHeroName()).append("=").append(player.getRole().getLabel());
+			if (i < players.size() - 1) {
+				sb.append(", ");
+			}
+		}
+		return sb.toString();
+	}
+
+	private String buildScoreMessage(boolean leaderFactionWins) {
+		int totalHp = 0;
+		for (Player player : players) {
+			if (player.isEliminated()) {
+				continue;
+			}
+			if (leaderFactionWins && (player.getRole() == Player.Role.LEADER || player.getRole() == Player.Role.LOYALIST)) {
+				totalHp += player.getHp();
+			} else if (!leaderFactionWins && player.getRole() == Player.Role.REBEL) {
+				totalHp += player.getHp();
+			}
+		}
+		return "Score: " + totalHp + " total HP remaining";
 	}
 }
