@@ -4,26 +4,45 @@ import java.util.List;
 public class Player {
 	public enum Ability {
 		DRAGON_CONVERT,
-		STRATEGIST_DRAW,
-		VENGEFUL_HEAL
+		VENGEFUL_HEAL,
+		NONE
+	}
+
+	public enum Role {
+		LEADER("Leader"),
+		REBEL("Rebel"),
+		LOYALIST("Loyalist");
+
+		private final String label;
+
+		Role(String label) {
+			this.label = label;
+		}
+
+		public String getLabel() {
+			return label;
+		}
 	}
 
 	private final String name;
 	private final String heroName;
 	private final Ability ability;
+	private final Role role;
 	private final ArrayList<Card> hand;
 	private final int maxHp;
 	private int hp;
 	private boolean eliminated;
 	private boolean convertedThisTurn;
 	private boolean healedThisTurn;
+	private boolean skipNextTurn;
 
-	public Player(String name, String heroName, int maxHp, Ability ability) {
+	public Player(String name, String heroName, int maxHp, Ability ability, Role role) {
 		this.name = name;
 		this.heroName = heroName;
 		this.maxHp = maxHp;
 		this.hp = maxHp;
 		this.ability = ability;
+		this.role = role;
 		this.hand = new ArrayList<Card>();
 	}
 
@@ -37,6 +56,10 @@ public class Player {
 
 	public Ability getAbility() {
 		return ability;
+	}
+
+	public Role getRole() {
+		return role;
 	}
 
 	public List<Card> getHand() {
@@ -62,6 +85,18 @@ public class Player {
 	public void resetForNewTurn() {
 		convertedThisTurn = false;
 		healedThisTurn = false;
+	}
+
+	public boolean shouldSkipTurn() {
+		return skipNextTurn;
+	}
+
+	public void markSkipTurn() {
+		skipNextTurn = true;
+	}
+
+	public void consumeSkipTurn() {
+		skipNextTurn = false;
 	}
 
 	public boolean hasCard(CardType type) {
@@ -96,8 +131,8 @@ public class Player {
 		return new Card(dodge.getValue(), "Sha*", dodge.getSuit(), CardType.ATTACK, "Dragon Courage strike");
 	}
 
-	public boolean canStrategistDraw() {
-		return ability == Ability.STRATEGIST_DRAW;
+	public int getDodgeBonusDraw() {
+		return 0;
 	}
 
 	public boolean canHealAfterDamage() {
@@ -127,6 +162,14 @@ public class Player {
 
 	public int getHandSize() {
 		return hand.size();
+	}
+
+	public Card discardRandomCard() {
+		if (hand.isEmpty()) {
+			return null;
+		}
+		int idx = (int) (Math.random() * hand.size());
+		return hand.remove(idx);
 	}
 
 	private int findCardIndex(CardType type) {
