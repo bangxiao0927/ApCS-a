@@ -21,6 +21,10 @@ public class Table extends JPanel implements ActionListener, MouseListener, KeyL
 	private JButton healButton;
 	private JButton tacticButton;
 	private JButton endTurnButton;
+	private JButton passButton;
+	private JButton menuButton;
+	private JButton twoPlayerButton;
+	private JButton threePlayerButton;
 	private CardGame cardGame;
 
 	public Table() {
@@ -29,7 +33,7 @@ public class Table extends JPanel implements ActionListener, MouseListener, KeyL
 
 			setLayout(null);
 
-			startButton = createButton("Start Battle", 440, 560, 200, 50);
+			startButton = createButton("Start Battle", 440, 700, 200, 50);
 			drawButton = createButton("Draw Card", 820, 300, 200, 40);
 			attackButton = createButton("Play Sha", 820, 350, 200, 40);
 			dodgeButton = createButton("Play Shan", 820, 400, 200, 40);
@@ -37,6 +41,10 @@ public class Table extends JPanel implements ActionListener, MouseListener, KeyL
 			healButton = createButton("Use Peach", 820, 500, 200, 40);
 			tacticButton = createButton("Use Tactic", 820, 550, 200, 40);
 			endTurnButton = createButton("End Turn", 820, 600, 200, 40);
+			passButton = createButton("Ready", 440, 560, 200, 50);
+			menuButton = createButton("Return to Menu", 440, 620, 200, 50);
+			twoPlayerButton = createButton("2 Players", 360, 740, 160, 45);
+			threePlayerButton = createButton("3 Players", 560, 740, 160, 45);
 
 			addMouseListener(this);
 			addKeyListener(this);
@@ -82,9 +90,19 @@ public class Table extends JPanel implements ActionListener, MouseListener, KeyL
 			cardGame.playTacticFromViewingPlayer();
 		} else if (src == endTurnButton) {
 			cardGame.endTurn();
+		} else if (src == passButton) {
+			cardGame.finishPassing();
+		} else if (src == menuButton) {
+			cardGame.returnToMenu();
+		} else if (src == twoPlayerButton) {
+			cardGame.setPlayerCount(2);
+		} else if (src == threePlayerButton) {
+			cardGame.setPlayerCount(3);
 		}
 		updateButtonStates();
 		repaint();
+		requestFocusInWindow();
+		setFocusable(true);
 	}
 
 	private JButton createButton(String text, int x, int y, int width, int height) {
@@ -100,15 +118,23 @@ public class Table extends JPanel implements ActionListener, MouseListener, KeyL
 		CardGame.GameState state = cardGame.getGameState();
 		boolean playing = state == CardGame.GameState.PLAYING;
 		boolean awaiting = state == CardGame.GameState.AWAITING_DODGE;
+		boolean passing = state == CardGame.GameState.PASSING || state == CardGame.GameState.PASSING_RESPONSE;
 
 		startButton.setVisible(state == CardGame.GameState.MENU || state == CardGame.GameState.GAME_OVER);
+		startButton.setText(state == CardGame.GameState.GAME_OVER ? "Play Again" : "Start Battle");
 		drawButton.setEnabled(playing && !cardGame.hasDrawnThisTurn());
 		attackButton.setEnabled(playing && cardGame.canActiveAttack());
 		dodgeButton.setEnabled(awaiting && cardGame.canViewingPlayerDodge());
 		takeHitButton.setEnabled(awaiting && cardGame.isViewingPlayerTargeted());
-		healButton.setEnabled(cardGame.canViewingPlayerHeal());
-		tacticButton.setEnabled(cardGame.canViewingPlayTactic());
-		endTurnButton.setEnabled(cardGame.canEndTurn());
+		healButton.setEnabled(playing && cardGame.canViewingPlayerHeal());
+		tacticButton.setEnabled(playing && cardGame.canViewingPlayTactic());
+		endTurnButton.setEnabled(playing && cardGame.canEndTurn());
+		passButton.setVisible(passing);
+		passButton.setEnabled(passing);
+		menuButton.setVisible(state == CardGame.GameState.GAME_OVER);
+		menuButton.setEnabled(state == CardGame.GameState.GAME_OVER);
+		twoPlayerButton.setVisible(state == CardGame.GameState.MENU);
+		threePlayerButton.setVisible(state == CardGame.GameState.MENU);
 	}
 
 	public void mousePressed(MouseEvent e) {
@@ -124,6 +150,10 @@ public class Table extends JPanel implements ActionListener, MouseListener, KeyL
 	public void keyPressed(KeyEvent e) {
 		if (e.getKeyChar() == 'c' || e.getKeyChar() == 'C') {
 			cardGame.applyCheatForViewingPlayer();
+			updateButtonStates();
+			repaint();
+		} else if (e.getKeyChar() == 'p' || e.getKeyChar() == 'P') {
+			cardGame.advanceCheatState();
 			updateButtonStates();
 			repaint();
 		}

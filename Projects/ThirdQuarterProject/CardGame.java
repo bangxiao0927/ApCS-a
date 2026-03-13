@@ -1,6 +1,9 @@
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Color;
+import java.awt.Image;
+import java.io.File;
+import javax.imageio.ImageIO;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -11,6 +14,8 @@ public class CardGame {
 		MENU,
 		PLAYING,
 		AWAITING_DODGE,
+		PASSING,
+		PASSING_RESPONSE,
 		GAME_OVER
 	}
 
@@ -34,6 +39,11 @@ public class CardGame {
 	private String scoreMessage;
 	private String roleRevealMessage;
 	private String skipNotice;
+	private String pendingTurnMessage;
+	private String pendingResponseMessage;
+	private Image backgroundImage;
+	private Image heartImage;
+	private int playerCount;
 
 	public CardGame() {
 		deck = new ArrayList<Card>();
@@ -41,12 +51,23 @@ public class CardGame {
 		players = new ArrayList<Player>();
 		gameState = GameState.MENU;
 		statusMessage = "点击开始进入三国战局";
+		playerCount = 3;
+		try {
+			backgroundImage = ImageIO.read(new File("background.jpg"));
+		} catch (Exception e) {
+			backgroundImage = null;
+		}
+		try {
+			heartImage = ImageIO.read(new File("hearts.png"));
+		} catch (Exception e) {
+			heartImage = null;
+		}
 	}
 
 	public void startGame() {
 		buildDeck();
 		shuffleDeck();
-		setupPlayers();
+		setupPlayers(playerCount);
 		dealOpeningHands();
 		gameState = GameState.PLAYING;
 		activePlayerIndex = 0;
@@ -64,7 +85,30 @@ public class CardGame {
 		scoreMessage = "";
 		roleRevealMessage = "";
 		skipNotice = null;
+		pendingTurnMessage = null;
+		pendingResponseMessage = null;
 		statusMessage = getActivePlayer().getHeroName() + " draws first blood.";
+	}
+
+	public void setPlayerCount(int count) {
+		if (count == 2 || count == 3) {
+			playerCount = count;
+			statusMessage = count == 2 ? "Mode set: 2 players." : "Mode set: 3 players.";
+		}
+	}
+
+	public void returnToMenu() {
+		gameState = GameState.MENU;
+		pendingAttackCard = null;
+		pendingTarget = null;
+		pendingTurnMessage = null;
+		pendingResponseMessage = null;
+		hasDrawnThisTurn = false;
+		winnerMessage = "";
+		scoreMessage = "";
+		roleRevealMessage = "";
+		skipNotice = null;
+		statusMessage = "点击开始进入三国战局";
 	}
 
 	private void buildDeck() {
@@ -86,11 +130,13 @@ public class CardGame {
 		deck.add(new Card(4, "Forced March", "hearts", CardType.TACTIC, "Discard or skip"));
 	}
 
-	private void setupPlayers() {
+	private void setupPlayers(int count) {
 		players.clear();
 		players.add(new Player("Player 1", "Zhao Yun", 4, Player.Ability.DRAGON_CONVERT, Player.Role.LEADER));
 		players.add(new StrategistPlayer("Player 2", "Zhuge Liang", 3, Player.Role.REBEL));
-		players.add(new Player("Player 3", "Sun Shangxiang", 4, Player.Ability.VENGEFUL_HEAL, Player.Role.LOYALIST));
+		if (count == 3) {
+			players.add(new Player("Player 3", "Sun Shangxiang", 4, Player.Ability.VENGEFUL_HEAL, Player.Role.LOYALIST));
+		}
 	}
 
 	private void dealOpeningHands() {
@@ -128,21 +174,42 @@ public class CardGame {
 	}
 
 	public void drawGame(Graphics g) {
-		g.setColor(new Color(4, 92, 35));
-		g.fillRect(0, 0, 1080, 1080);
+		if (gameState != GameState.MENU && gameState != GameState.PASSING && backgroundImage != null) {
+			g.drawImage(backgroundImage, 0, 0, 1080, 1080, null);
+		} else {
+			g.setColor(new Color(4, 92, 35));
+			g.fillRect(0, 0, 1080, 1080);
+		}
 
 		if (gameState == GameState.MENU) {
 			drawMenu(g);
 			return;
 		}
 
+		if (gameState == GameState.PASSING || gameState == GameState.PASSING_RESPONSE) {
+			drawPassingScreen(g);
+			return;
+		}
+
 		if (gameState == GameState.GAME_OVER) {
 			drawGameOver(g);
-		} else {
-			drawPlayers(g);
+			return;
 		}
+		drawPlayers(g);
 		drawViewingHand(g);
 		drawStatus(g);
+	}
+
+	private void drawPassingScreen(Graphics g) {
+		g.setColor(Color.black);
+		g.fillRect(0, 0, 1080, 1080);
+		g.setColor(Color.white);
+		Font title = new Font("Arial", Font.BOLD, 36);
+		g.setFont(title);
+		g.drawString("Pass to the next player", 300, 420);
+		Font body = new Font("Arial", Font.PLAIN, 20);
+		g.setFont(body);
+		g.drawString("Press Ready when the next player is seated.", 320, 470);
 	}
 
 	private void drawMenu(Graphics g) {
@@ -155,30 +222,32 @@ public class CardGame {
 		Font body = new Font("Arial", Font.PLAIN, 20);
 		g.setFont(body);
 		g.setColor(Color.white);
+		g.drawString("Mode: " + (playerCount == 2 ? "2 Players" : "3 Players"), 420, 480);
 		g.drawString("Use the buttons to draw, attack (Sha), dodge (Shan), and heal (Peach).", 140, 420);
 		g.drawString("Hidden roles: Leader, Rebel, Loyalist. Defeat the opposing faction.", 140, 450);
 		g.drawString("Unique hero abilities:", 140, 490);
 		g.drawString("Zhao Yun converts a Dodge into an Attack once per turn.", 160, 530);
 		g.drawString("Zhuge Liang draws a bonus card when he dodges.", 160, 560);
 		g.drawString("Sun Shangxiang heals 1 HP after dealing damage once per turn.", 160, 590);
-		g.drawString("Cheat key: press 'C' to grant the viewing hero a bonus draw + heal.", 140, 630);
+		g.drawString("Cheat keys: 'C' gives a bonus draw + heal, 'P' skips screens.", 140, 630);
 	}
 
 	private void drawGameOver(Graphics g) {
-		drawPlayers(g);
+		g.setColor(Color.black);
+		g.fillRect(0, 0, 1080, 1080);
 		g.setColor(new Color(255, 215, 0));
 		Font title = new Font("Serif", Font.BOLD, 44);
 		g.setFont(title);
-		g.drawString("Battle Resolved", 320, 360);
+		g.drawString("Battle Resolved", 320, 300);
 		g.setColor(Color.white);
 		Font body = new Font("Arial", Font.PLAIN, 22);
 		g.setFont(body);
-		g.drawString(winnerMessage, 200, 420);
-		g.drawString(scoreMessage, 200, 450);
+		g.drawString(winnerMessage, 200, 380);
+		g.drawString(scoreMessage, 200, 410);
 		g.drawString("Turns: " + turnCount + " | Draws: " + drawsTaken + " | Attacks: " + attacksPlayed
-				+ " | Dodges: " + dodgesPlayed + " | Heals: " + healsUsed + " | Tactics: " + tacticsPlayed, 200, 480);
-		g.drawString(roleRevealMessage, 200, 510);
-		g.drawString("Press Start to begin a new duel.", 260, 560);
+				+ " | Dodges: " + dodgesPlayed + " | Heals: " + healsUsed + " | Tactics: " + tacticsPlayed, 200, 440);
+		g.drawString(roleRevealMessage, 200, 470);
+		g.drawString("Use Play Again or Return to Menu.", 260, 520);
 	}
 
 	private void drawPlayers(Graphics g) {
@@ -186,7 +255,7 @@ public class CardGame {
 		g.setFont(infoFont);
 		for (int i = 0; i < players.size(); i++) {
 			Player p = players.get(i);
-			int baseY = 60 + (i * 90);
+			int baseY = 70 + (i * 120);
 			Color labelColor = Color.white;
 			if (p.isEliminated()) {
 				labelColor = Color.GRAY;
@@ -204,17 +273,41 @@ public class CardGame {
 			if (i == viewingPlayerIndex) {
 				flag += " [Viewing]";
 			}
+			g.setColor(new Color(0, 0, 0, 120));
+			g.fillRoundRect(30, baseY - 22, 520, 80, 10, 10);
+			g.setColor(labelColor);
 			g.drawString(p.getHeroName() + flag, 40, baseY);
 			boolean revealRole = gameState == GameState.GAME_OVER || i == viewingPlayerIndex;
 			String roleLabel = revealRole ? p.getRole().getLabel() : "Hidden";
-			g.drawString("HP: " + p.getHp() + "/" + p.getMaxHp() + " | Cards: " + p.getHandSize() + " | Role: " + roleLabel, 40, baseY + 26);
+			drawHpHearts(g, p, 40, baseY + 10);
+			g.drawString("Cards: " + p.getHandSize() + " | Role: " + roleLabel, 40, baseY + 52);
 			if (gameState == GameState.AWAITING_DODGE && pendingTarget == p) {
-				g.drawString("Targeted by Sha!", 40, baseY + 52);
+				g.drawString("Targeted by Sha!", 40, baseY + 72);
 			}
 		}
 
 		g.setColor(Color.white);
 		g.drawString("Deck: " + deck.size() + " | Discard: " + discardPile.size(), 820, 60);
+	}
+
+	private void drawHpHearts(Graphics g, Player player, int x, int y) {
+		int maxHp = player.getMaxHp();
+		int currentHp = player.getHp();
+		int iconSize = 20;
+		int gap = 4;
+		for (int i = 0; i < maxHp; i++) {
+			int drawX = x + i * (iconSize + gap);
+			if (heartImage != null) {
+				g.drawImage(heartImage, drawX, y, iconSize, iconSize, null);
+			} else {
+				g.setColor(Color.red);
+				g.fillOval(drawX, y, iconSize, iconSize);
+			}
+			if (i >= currentHp) {
+				g.setColor(new Color(0, 0, 0, 150));
+				g.fillRect(drawX, y, iconSize, iconSize);
+			}
+		}
 	}
 
 	private void drawViewingHand(Graphics g) {
@@ -300,6 +393,7 @@ public class CardGame {
 		}
 		hasDrawnThisTurn = true;
 		drawsTaken++;
+		SoundEffects.playDrawSound();
 		statusMessage = active.getHeroName() + " drew " + card.getName() + ".";
 	}
 
@@ -318,6 +412,7 @@ public class CardGame {
 			statusMessage = attacker.getHeroName() + " uses Dragon Convert to turn Shan into Sha!";
 		}
 		attacksPlayed++;
+		SoundEffects.playPlaySound();
 		Player target = selectNextTarget();
 		if (target == null) {
 			discardPile.add(attackCard);
@@ -326,9 +421,10 @@ public class CardGame {
 		}
 		pendingAttackCard = attackCard;
 		pendingTarget = target;
-		gameState = GameState.AWAITING_DODGE;
+		gameState = GameState.PASSING_RESPONSE;
 		focusViewOnPlayer(target);
-		statusMessage = attacker.getHeroName() + " plays Sha targeting " + target.getHeroName() + ".";
+		pendingResponseMessage = target.getHeroName() + " must respond with Shan or take hit.";
+		statusMessage = "Pass the computer to " + target.getHeroName() + " to respond.";
 	}
 
 	public void playDodgeFromViewingPlayer() {
@@ -347,6 +443,7 @@ public class CardGame {
 		}
 		discardPile.add(dodge);
 		dodgesPlayed++;
+		SoundEffects.playPlaySound();
 		discardPendingAttack();
 		statusMessage = viewing.getHeroName() + " dodges the attack.";
 		int bonusDraws = viewing.getDodgeBonusDraw();
@@ -389,6 +486,7 @@ public class CardGame {
 		discardPile.add(healCard);
 		viewing.heal(1);
 		healsUsed++;
+		SoundEffects.playPlaySound();
 		statusMessage = viewing.getHeroName() + " uses a Peach to heal.";
 	}
 
@@ -407,6 +505,7 @@ public class CardGame {
 		}
 		discardPile.add(tactic);
 		tacticsPlayed++;
+		SoundEffects.playPlaySound();
 		if ("Battle Orders".equals(tactic.getName())) {
 			applyBattleOrders(viewing);
 		} else if ("Forced March".equals(tactic.getName())) {
@@ -434,11 +533,43 @@ public class CardGame {
 		}
 		turnCount++;
 		viewingPlayerIndex = activePlayerIndex;
-		statusMessage = getActivePlayer().getHeroName() + " takes the initiative.";
+		pendingTurnMessage = getActivePlayer().getHeroName() + " takes the initiative.";
 		if (skipNotice != null) {
-			statusMessage += " " + skipNotice;
+			pendingTurnMessage += " " + skipNotice;
 			skipNotice = null;
 		}
+		statusMessage = "Pass the computer to the next player.";
+		gameState = GameState.PASSING;
+	}
+
+	public void finishPassing() {
+		if (gameState != GameState.PASSING) {
+			if (gameState == GameState.PASSING_RESPONSE) {
+				gameState = GameState.AWAITING_DODGE;
+				statusMessage = pendingResponseMessage != null ? pendingResponseMessage : "Respond to the attack.";
+				pendingResponseMessage = null;
+				return;
+			}
+			return;
+		}
+		gameState = GameState.PLAYING;
+		statusMessage = pendingTurnMessage != null ? pendingTurnMessage : "Ready to play.";
+		pendingTurnMessage = null;
+	}
+
+	public void advanceCheatState() {
+		if (gameState == GameState.MENU) {
+			startGame();
+			return;
+		}
+		if (gameState == GameState.GAME_OVER) {
+			return;
+		}
+		winnerMessage = "Cheat: demo concluded.";
+		scoreMessage = "Score: demo skip";
+		roleRevealMessage = buildRoleRevealMessage();
+		statusMessage = winnerMessage;
+		gameState = GameState.GAME_OVER;
 	}
 
 	public void cycleView() {

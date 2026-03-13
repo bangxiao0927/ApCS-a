@@ -14,6 +14,7 @@ public class Card {
 	private CardType type;
 	private String description;
 	private BufferedImage suitImage;
+	private BufferedImage cardImage;
 
 
 	public Card(int value, String name, String suit) {
@@ -26,6 +27,15 @@ public class Card {
 		this.suit = suit;
 		this.type = type;
 		this.description = description;
+		if ("Sha".equalsIgnoreCase(name)) {
+			try {
+				cardImage = ImageIO.read(new File("sha.png"));
+			} catch (IOException e) {}
+		} else if ("Shan".equalsIgnoreCase(name)) {
+			try {
+				cardImage = ImageIO.read(new File("shan.JPG"));
+			} catch (IOException e) {}
+		}
 		if (suit.equals("hearts")) {
 			try {
 				suitImage = ImageIO.read(new File("hearts.png"));
@@ -67,6 +77,10 @@ public class Card {
 
 		//draw suit
 		g.drawImage(suitImage, x + 4, y + 4, null);
+
+		if (cardImage != null) {
+			g.drawImage(cardImage, x + 10, y + 30, 140, 120, null);
+		}
 	   
 	      //Set Font to use with drawString   
 		Font font = new Font("Arial", Font.PLAIN, 36);
