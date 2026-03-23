@@ -8,7 +8,7 @@ public class Chinese implements Language {
     }
 
     public String getBye() {
-        return "Zao jian";
+        return "Zai jian";
     }
 
     public String getThankYou() {
