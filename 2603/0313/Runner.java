@@ -5,6 +5,7 @@ public class Runner{
         Game game = new Game();
         Scanner scanner = new Scanner(System.in);
 
+        // Alternate between both players until someone wins or the board fills up.
         while (true) {
             game.printTable();
             System.out.print("Player 1 enter row and column: ");
@@ -18,6 +19,7 @@ public class Runner{
                 System.out.println("Player " + winner + " wins!");
                 break;
             }
+            // Stop if there are no empty spaces left.
             if (game.checkFull()) {
                 break;
             }

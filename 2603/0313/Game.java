@@ -3,6 +3,7 @@ public class Game {
     private int turn;
 
     public Game() {
+        // 0 means empty, 1 means X, and 2 means O.
         table = new int[3][3];
         turn = 1;
     }
@@ -24,10 +25,12 @@ public class Game {
     }
 
     public void insertXO(int row, int col) {
+        // Place the current player's mark only if the position is valid and empty.
         if (row >= 0 && row < 3 && col >= 0 && col < 3 && table[row][col] == 0) {
             table[row][col] = turn;
         }
 
+        // Switch to the other player after each turn.
         if (turn == 1) {
             turn = 2;
         } else {
@@ -47,6 +50,7 @@ public class Game {
     }
 
     public int checkTicTacToe() {
+        // Check each row for three matching marks.
         for (int row = 0; row < 3; row++) {
             if (table[row][0] != 0
                     && table[row][0] == table[row][1]
@@ -55,6 +59,7 @@ public class Game {
             }
         }
 
+        // Check each column for three matching marks.
         for (int col = 0; col < 3; col++) {
             if (table[0][col] != 0
                     && table[0][col] == table[1][col]
@@ -63,12 +68,14 @@ public class Game {
             }
         }
 
+        // Check the top-left to bottom-right diagonal.
         if (table[0][0] != 0
                 && table[0][0] == table[1][1]
                 && table[1][1] == table[2][2]) {
             return table[0][0];
         }
 
+        // Check the top-right to bottom-left diagonal.
         if (table[0][2] != 0
                 && table[0][2] == table[1][1]
                 && table[1][1] == table[2][0]) {
