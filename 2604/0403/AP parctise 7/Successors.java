@@ -15,5 +15,17 @@ public class Successors{
 	
 	public static Position[][] getSuccessorArray(int[][] intArr)
 	{ /* to be implemented in part (b) */ 
+		Position[][] successorArray = new Position[intArr.length][intArr[0].length];
+		
+		for (int i = 0; i < intArr.length; i++) {
+			for (int j = 0; j < intArr[i].length; j++) {
+
+				int successorNum = intArr[i][j] + 1;
+				successorArray[i][j] = findPosition(successorNum, intArr);
+				
+			}
+		}
+		
+		return successorArray;
 	}
 }
