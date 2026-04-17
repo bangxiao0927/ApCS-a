@@ -18,7 +18,14 @@ public class WordChecker {
     */
     public boolean isWordChain() {
         /* to be implemented in part (a) */
-        
+        int idx = 0;
+        for (String word : wordList) {
+            if (wordList.indexOf(word) == -1 && idx != 0) { return false; }
+            else {
+                idx++;
+            }
+        }
+        return true;
     }
 
     /**
@@ -30,7 +37,7 @@ public class WordChecker {
     */
     public ArrayList<String> createList(String target) {
         /* to be implemented in part (b) */
-
+        
     }
     
 }
