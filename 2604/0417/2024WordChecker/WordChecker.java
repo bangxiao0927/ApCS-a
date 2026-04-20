@@ -37,7 +37,15 @@ public class WordChecker {
     */
     public ArrayList<String> createList(String target) {
         /* to be implemented in part (b) */
-        
+        ArrayList<String> result = new ArrayList<String>();
+
+        for (String word : wordList) {
+            if (word.indexOf(target) == 0) {
+                result.add(word.substring(target.length()));
+            }
+        }
+
+        return result;
     }
     
 }
