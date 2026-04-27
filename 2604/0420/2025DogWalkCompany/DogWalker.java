@@ -56,8 +56,21 @@ public class DogWalker
     * maxDogs > 0
     */
     public int dogWalkShift(int startHour, int endHour)
-    { /* to be implemented in part (b) */
-        
+    {
+        int totalEarned = 0;
+
+        for (int hour = startHour; hour <= endHour; hour++) {
+            int dogsWalked = walkDogs(hour);
+            int hourEarned = dogsWalked * 5;
+
+            if (dogsWalked == maxDogs || (hour >= 9 && hour <= 17)) {
+                hourEarned += 3;
+            }
+
+            totalEarned += hourEarned;
+        }
+
+        return totalEarned;
     }
 
     /* There may be instance variables, constructors,
