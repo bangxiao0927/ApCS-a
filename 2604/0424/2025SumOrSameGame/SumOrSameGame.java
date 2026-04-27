@@ -64,9 +64,6 @@ public class SumOrSameGame
         }
     }
 
-
-
-
     /**
     * Identifies and clears an element of puzzle that can be paired with
     * the element at the given row and column, as described in part (b)
@@ -75,7 +72,20 @@ public class SumOrSameGame
     */
     public boolean clearPair(int row, int col)
     { /* to be implemented in part (b) */ 
-        
+        int value = puzzle[row][col];
+        for (int i = 0; i < puzzle.length; i++) {
+            for (int j = 0; j < puzzle[i].length; j++) {
+                if (i == row && j == col) {
+                    continue;
+                }
+                if (puzzle[i][j] == value || puzzle[i][j] + value == 10) {
+                    puzzle[row][col] = 0;
+                    puzzle[i][j] = 0;
+                    return true;
+                }
+            }
+        }
+        return false;
 
     }
 
