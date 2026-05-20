@@ -19,9 +19,7 @@ public class Player
         return id;
     }
 
-
-
-
+    
     /**
     * Returns the player’s score in the game,
     * guaranteed to be nonnegative
