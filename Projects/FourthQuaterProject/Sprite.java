@@ -1,5 +1,3 @@
-package Projects.FourthQuaterProject;
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -142,8 +140,7 @@ public class Sprite extends JPanel implements MouseListener {
     private void drawRiverText(Graphics2D g, int boardWidth) {
         g.setColor(new Color(120, 63, 42));
         g.setFont(new Font("Serif", Font.BOLD, 24));
-        drawCenteredText(g, "楚 河", BOARD_X + boardWidth / 2, BOARD_Y + 4 * CELL_SIZE + 34);
-        drawCenteredText(g, "漢 界", BOARD_X + boardWidth / 2, BOARD_Y + 5 * CELL_SIZE - 14);
+        drawCenteredText(g, "楚 河     漢 界", BOARD_X + boardWidth / 2, (int) (PANEL_HEIGHT / 2));
         g.setColor(new Color(88, 45, 30));
     }
 
