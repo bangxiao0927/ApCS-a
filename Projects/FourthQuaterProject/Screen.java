@@ -25,7 +25,6 @@ public class Screen extends Sprite implements ActionListener, MouseListener, Key
     //Board Game
 
     private BoardGame boardGame = new BoardGame("red");
-
     public Screen() {
         setLayout(null);
         addMouseListener(this);
@@ -40,12 +39,24 @@ public class Screen extends Sprite implements ActionListener, MouseListener, Key
         showMenuButtons();
 	}
 
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        requestFocusInWindow();
+    }
+
     public void paintComponent(Graphics g){
 		super.paintComponent(g);
 
-        drawMain(g);
+
         if (boardGame.getGameState()) {
             drawGameScreen(g, boardGame);
+        } else {
+            if (boardGame.getWinStatus().equals("exited")) {
+                drawEnd(g);
+            } else {
+                drawMain(g);
+            }
         }
 	}
 
@@ -69,20 +80,32 @@ public class Screen extends Sprite implements ActionListener, MouseListener, Key
 
             g.setFont(body);
             g.drawString("Rules:", 240, 250);
+
+            showMenuButtons();
         }
     }
 
     private void drawGameScreen(Graphics g, BoardGame boardGame) {
         boardGame.drawGame(g);
+        showGameButtons();
     }
 
     //using this for end game screen and implementing in drawGame for win condition in BoardGame
     public void drawEnd(Graphics g) {
+        if (boardGame.getWinStatus().equals("exited")) {
+            g.setColor(BACK_GROUND_COLOR);
+            g.fillRect(0, 0, 900, 700);
+            g.setColor(BLACK);
+            g.setFont(title);
+            g.drawString("Game Exited", 350, 350);
+            showEndButtons();
+            return;
+        }
         g.setColor(BACK_GROUND_COLOR);
         g.fillRect(0, 0, 900, 700);
         g.setColor(BLACK);
         g.setFont(title);
-        g.drawString(boardGame.getWinStatus() + "wins", 330, 200);
+        g.drawString(boardGame.getWinStatus() + "WINS", 290, 200);
         showEndButtons();
     }
 
@@ -144,7 +167,10 @@ public class Screen extends Sprite implements ActionListener, MouseListener, Key
 	public void mouseClicked(MouseEvent e) {}
 
 	public void keyPressed(KeyEvent e) {
-		
+		if (e.getKeyCode() == KeyEvent.VK_F1) {
+            boardGame.setForceQuit();
+            repaint();
+        }
 	}
 
 	public void keyReleased(KeyEvent e) {}

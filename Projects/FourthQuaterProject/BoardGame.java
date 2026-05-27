@@ -442,6 +442,9 @@ public class BoardGame extends Sprite {
         pieceSide = (pieceSide.equals("red") ) ? "black" : "red";
     }
 
-
+    public void setForceQuit() {
+        winStatus = "exited";
+        updateInGame(false);
+    }
 
 }
