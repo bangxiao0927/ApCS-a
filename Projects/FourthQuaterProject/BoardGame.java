@@ -1,11 +1,21 @@
 import java.util.ArrayList;
+import java.awt.Graphics;
+import java.awt.Color;
 
 public class BoardGame extends Sprite {
     private String pieceSide;
-    private String winStatus;
+    private String winStatus = "";
 
     private ArrayList<Piece> redPieces = new ArrayList<Piece>();
     private ArrayList<Piece> blackPieces = new ArrayList<Piece>();
+
+    private Board board;
+
+    public BoardGame(String pieceSide) {
+        this.pieceSide = pieceSide;
+        this.board = new Board(10, 9, pieceSide);
+        board.initialPieces();
+    }   
 
     public class Piece {
         private String type;
@@ -148,7 +158,7 @@ public class BoardGame extends Sprite {
                     // Check for a piece to jump over
                     for (int j = i + 1; j < board.MAXROW; j++) {
                         if (board.getPiece(j, board.getPieceCol(piece)) != null) {
-                            if (board.getPiece(j, board.getPieceCol(piece)).getSide() != piece.getSide()) {
+                            if (!board.getPiece(j, board.getPieceCol(piece)).getSide().equals(piece.getSide())) {
                                 paths.add(new Pos(j, board.getPieceCol(piece)));
                             }
                             break;
@@ -165,7 +175,7 @@ public class BoardGame extends Sprite {
                         // Check for a piece to jump over
                         for (int k = j + 1; k < board.MAXCOL; k++) {
                             if (board.getPiece(board.getPieceRow(piece), k) != null) {
-                                if (board.getPiece(board.getPieceRow(piece), k).getSide() != piece.getSide()) {
+                                if (!board.getPiece(board.getPieceRow(piece), k).getSide().equals(piece.getSide())) {
                                     paths.add(new Pos(board.getPieceRow(piece), k));
                                 }
                                 break;
@@ -283,31 +293,17 @@ public class BoardGame extends Sprite {
 
         if (redGeneralCaptured) {
             winStatus = "Black ";
-            updateInGame();
+            updateInGame(false);
         } else if (blackGeneralCaptured) {
             winStatus = "Red ";
-            updateInGame();
+            updateInGame(false);
         } else {
             winStatus = "";
         }
     }
 
-    public void gameLogic() {
-        // Implement the main game logic, including turn management, win condition checking, and any special rules
-        Board board = new Board(10, 9);
-        board.initialPieces();
-
-        // Main game loop (this is just a placeholder, actual implementation would depend on how you want to structure the game)
-        while (winStatus.equals("")) {
-            // Get player input for piece selection and movement
-            // Move the piece based on player input
-            // Check for win condition after each move
-            checkWinCondition(board);
-        }
-    }
-
     public class Board {
-        private static Piece[][] board;
+        private Piece[][] board;
         private int MAXROW = 10;
         private int MAXCOL = 9;
 
@@ -328,37 +324,56 @@ public class BoardGame extends Sprite {
         }
 
         public void initialPieces() {
-            // Initialize pieces for both sides
-            for (int col = 0; col < MAXCOL; col+=2) {
-                board[3][col] = new Piece("兵", "red");
-                board[6][col] = new Piece("卒", "black");
+            for (int row = 0; row < MAXROW; row++) {
+                for (int col = 0; col < MAXCOL; col++) {
+                    board[row][col] = null;
+                }
             }
 
-            board[0][0] = new Piece("車", "red");
-            board[0][1] = new Piece("馬", "red");
-            board[0][2] = new Piece("象", "red");
-            board[0][3] = new Piece("士", "red");
-            board[0][4] = new Piece("将", "red");
-            board[0][5] = new Piece("士", "red");
-            board[0][6] = new Piece("象", "red");
-            board[0][7] = new Piece("馬", "red");
-            board[0][8] = new Piece("車", "red");
+            redPieces.clear();
+            blackPieces.clear();
 
-            board[1][0] = new Piece("炮", "red");
-            board[1][7] = new Piece("炮", "red");
+            // Initialize pieces for both sides
+            for (int col = 0; col < MAXCOL; col+=2) {
+                placePiece(3, col, "兵", "red");
+                placePiece(6, col, "卒", "black");
+            }
 
-            board[9][0] = new Piece("車", "black");
-            board[9][1] = new Piece("馬", "black");
-            board[9][2] = new Piece("象", "black");
-            board[9][3] = new Piece("士", "black");
-            board[9][4] = new Piece("将", "black");
-            board[9][5] = new Piece("士", "black");
-            board[9][6] = new Piece("象", "black");
-            board[9][7] = new Piece("馬", "black");
-            board[9][8] = new Piece("車", "black");
+            placePiece(0, 0, "車", "red");
+            placePiece(0, 1, "馬", "red");
+            placePiece(0, 2, "象", "red");
+            placePiece(0, 3, "士", "red");
+            placePiece(0, 4, "将", "red");
+            placePiece(0, 5, "士", "red");
+            placePiece(0, 6, "象", "red");
+            placePiece(0, 7, "馬", "red");
+            placePiece(0, 8, "車", "red");
 
-            board[8][1] = new Piece("炮", "black");
-            board[8][7] = new Piece("炮", "black");
+            placePiece(1, 0, "炮", "red");
+            placePiece(1, 7, "炮", "red");
+
+            placePiece(9, 0, "車", "black");
+            placePiece(9, 1, "馬", "black");
+            placePiece(9, 2, "象", "black");
+            placePiece(9, 3, "士", "black");
+            placePiece(9, 4, "将", "black");
+            placePiece(9, 5, "士", "black");
+            placePiece(9, 6, "象", "black");
+            placePiece(9, 7, "馬", "black");
+            placePiece(9, 8, "車", "black");
+
+            placePiece(8, 1, "炮", "black");
+            placePiece(8, 7, "炮", "black");
+        }
+
+        private void placePiece(int row, int col, String type, String side) {
+            Piece piece = new Piece(type, side);
+            board[row][col] = piece;
+            if (side.equals("red")) {
+                redPieces.add(piece);
+            } else {
+                blackPieces.add(piece);
+            }
         }
 
         public int getPieceRow(Piece piece) {
@@ -402,8 +417,13 @@ public class BoardGame extends Sprite {
 
     private Boolean inGame = false;
 
-    public BoardGame(String pieceSide) {
-        this.pieceSide = pieceSide;
+
+    public void drawGame(Graphics g) {
+        if (inGame) {
+            
+        
+            checkWinCondition(board);
+        }
     }
 
     public String getWinStatus() {
@@ -414,8 +434,8 @@ public class BoardGame extends Sprite {
         return inGame;
     } 
 
-    public void updateInGame() {
-        inGame = !inGame;
+    public void updateInGame(Boolean state) {
+        inGame = state;
     }
 
     public void updateTurn() {
