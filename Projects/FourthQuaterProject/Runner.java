@@ -5,6 +5,7 @@ public class Runner {
         JFrame frame = new JFrame("Chinese Chess");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(900, 700);
+        frame.setResizable(false);
         frame.add(new Screen());
         frame.setVisible(true);
     }

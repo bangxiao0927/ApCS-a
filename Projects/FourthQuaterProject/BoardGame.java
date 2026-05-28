@@ -3,7 +3,7 @@ import java.awt.Graphics;
 import java.awt.Color;
 
 public class BoardGame extends Sprite {
-    private String pieceSide;
+    private String currentSide;
     private String winStatus = "";
 
     private ArrayList<Piece> redPieces = new ArrayList<Piece>();
@@ -11,9 +11,8 @@ public class BoardGame extends Sprite {
 
     private Board board;
 
-    public BoardGame(String pieceSide) {
-        this.pieceSide = pieceSide;
-        this.board = new Board(10, 9, pieceSide);
+    public BoardGame(String StartSide) {
+        this.board = new Board(10, 9, StartSide);
         board.initialPieces();
     }   
 
@@ -244,6 +243,13 @@ public class BoardGame extends Sprite {
         return paths;
     }
 
+    public void graphicsPieces(String pieceSide , String piece , Graphics g, int row, int col) {
+        Color color = (pieceSide.equals("red")) ? new Color(222, 26, 26) : new Color(0, 0, 0);
+        g.setColor(color);
+        g.fillOval(col * 60, row * 60, 60, 60);
+        g.drawString(piece, col * 60 + 10, row * 60 + 40);
+    }
+
     public void movePiece(Piece piece, Pos newPos, Board board) {
         // Implement the logic to move a piece to a new position on the board
         // This should include checking if the move is valid based on the piece's movement rules and if it captures an opponent's piece
@@ -349,8 +355,8 @@ public class BoardGame extends Sprite {
             placePiece(0, 7, "馬", "red");
             placePiece(0, 8, "車", "red");
 
-            placePiece(1, 0, "炮", "red");
-            placePiece(1, 7, "炮", "red");
+            placePiece(2, 1, "炮", "red");
+            placePiece(2, 7, "炮", "red");
 
             placePiece(9, 0, "車", "black");
             placePiece(9, 1, "馬", "black");
@@ -362,8 +368,8 @@ public class BoardGame extends Sprite {
             placePiece(9, 7, "馬", "black");
             placePiece(9, 8, "車", "black");
 
-            placePiece(8, 1, "炮", "black");
-            placePiece(8, 7, "炮", "black");
+            placePiece(7, 1, "炮", "black");
+            placePiece(7, 7, "炮", "black");
         }
 
         private void placePiece(int row, int col, String type, String side) {
@@ -418,9 +424,19 @@ public class BoardGame extends Sprite {
     private Boolean inGame = false;
 
 
-    public void drawGame(Graphics g) {
+    public void drawGame(Graphics g, BoardGame boardGame) {
         if (inGame) {
-            
+            Piece piece;
+            String pieceSide;
+            for (int row = 0; row < board.MAXROW; row++) {
+                for (int col = 0; col < board.MAXCOL; col++) {
+                    piece = board.getPiece(row, col);
+                    if (piece != null) {
+                        pieceSide = piece.getSide();
+                        graphicsPieces(pieceSide, piece.getType(), g, row, col);
+                    }
+                }
+            }
         
             checkWinCondition(board);
         }
@@ -439,7 +455,7 @@ public class BoardGame extends Sprite {
     }
 
     public void updateTurn() {
-        pieceSide = (pieceSide.equals("red") ) ? "black" : "red";
+        currentSide = (currentSide.equals("red") ) ? "black" : "red";
     }
 
     public void setForceQuit() {

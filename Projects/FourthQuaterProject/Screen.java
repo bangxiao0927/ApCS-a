@@ -86,7 +86,7 @@ public class Screen extends Sprite implements ActionListener, MouseListener, Key
     }
 
     private void drawGameScreen(Graphics g, BoardGame boardGame) {
-        boardGame.drawGame(g);
+        boardGame.drawGame(g,boardGame);
         showGameButtons();
     }
 
@@ -107,13 +107,6 @@ public class Screen extends Sprite implements ActionListener, MouseListener, Key
         g.setFont(title);
         g.drawString(boardGame.getWinStatus() + "WINS", 290, 200);
         showEndButtons();
-    }
-
-    public void graphicsPieces(int pieceSide , String piece , Graphics g, int row, int col) {
-        Color color = (pieceSide == 1) ? new Color(222, 26, 26) : new Color(0, 0, 0);
-        g.setColor(color);
-        g.fillOval(col * 60, row * 60, 60, 60);
-        g.drawString(piece, col * 60 + 10, row * 60 + 40);
     }
 
     //essentials
