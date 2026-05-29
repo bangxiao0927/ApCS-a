@@ -1,5 +1,8 @@
 import javax.swing.JPanel;
 import javax.swing.Timer;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -239,6 +242,67 @@ public class Sprite extends JPanel {
             "Moving onto an opponent piece captures it.",
             "Capturing a general triggers the winning sound effect."
         };
+    }
+
+    public void drawXiangqiBoard(Graphics g) {
+        Color boardColor = new Color(255, 205, 120);
+        Color lineColor = new Color(95, 55, 20);
+        Font riverFont = new Font("Arial", Font.BOLD, 28);
+
+        int left = getBoardOffsetX() + CELL_SIZE / 2;
+        int top = getBoardOffsetY() + CELL_SIZE / 2;
+        int right = left + (maxCol - 1) * CELL_SIZE;
+        int bottom = top + (maxRow - 1) * CELL_SIZE;
+        int riverTop = top + 4 * CELL_SIZE;
+        int riverBottom = top + 5 * CELL_SIZE;
+
+        g.setColor(boardColor);
+        g.fillRect(0, 0, getWidth(), getHeight());
+
+        g.setColor(lineColor);
+        for (int row = 0; row < maxRow; row++) {
+            int y = top + row * CELL_SIZE;
+            g.drawLine(left, y, right, y);
+        }
+
+        for (int col = 0; col < maxCol; col++) {
+            int x = left + col * CELL_SIZE;
+            if (col == 0 || col == maxCol - 1) {
+                g.drawLine(x, top, x, bottom);
+            } else {
+                g.drawLine(x, top, x, riverTop);
+                g.drawLine(x, riverBottom, x, bottom);
+            }
+        }
+
+        drawPalace(g, left, top);
+        drawPalace(g, left, top + 7 * CELL_SIZE);
+
+        g.setFont(riverFont);
+        g.drawString("楚河", left + CELL_SIZE, riverTop + 42);
+        g.drawString("汉界", left + 5 * CELL_SIZE, riverTop + 42);
+    }
+
+    protected int getBoardOffsetX() {
+        return (900 - maxCol * CELL_SIZE) / 2;
+    }
+
+    protected int getBoardOffsetY() {
+        return (700 - maxRow * CELL_SIZE) / 2;
+    }
+
+    protected int getCellSize() {
+        return CELL_SIZE;
+    }
+
+    private void drawPalace(Graphics g, int left, int top) {
+        int palaceLeft = left + 3 * CELL_SIZE;
+        int palaceRight = left + 5 * CELL_SIZE;
+        int palaceTop = top;
+        int palaceBottom = top + 2 * CELL_SIZE;
+
+        g.drawLine(palaceLeft, palaceTop, palaceRight, palaceBottom);
+        g.drawLine(palaceRight, palaceTop, palaceLeft, palaceBottom);
     }
 
     private boolean canDisplace(int newRow, int newCol) {

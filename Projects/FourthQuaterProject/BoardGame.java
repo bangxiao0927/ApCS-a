@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.awt.Graphics;
 import java.awt.Color;
+import java.awt.Font;
 
 public class BoardGame extends Sprite {
     private String currentSide;
@@ -245,9 +246,17 @@ public class BoardGame extends Sprite {
 
     public void graphicsPieces(String pieceSide , String piece , Graphics g, int row, int col) {
         Color color = (pieceSide.equals("red")) ? new Color(222, 26, 26) : new Color(0, 0, 0);
+        Color BACK_GROUND_COLOR = new Color(255,205,120);
+        Font body = new Font("Arial", Font.PLAIN, 20);
+        int cellSize = getCellSize();
+        int x = getBoardOffsetX() + col * cellSize;
+        int y = getBoardOffsetY() + row * cellSize;
+        g.setColor(BACK_GROUND_COLOR);
+        g.drawOval(x, y, cellSize, cellSize);
         g.setColor(color);
-        g.fillOval(col * 60, row * 60, 60, 60);
-        g.drawString(piece, col * 60 + 10, row * 60 + 40);
+        g.drawOval(x, y, cellSize, cellSize);
+        g.setFont(body);
+        g.drawString(piece, x + 10, y + 40);
     }
 
     public void movePiece(Piece piece, Pos newPos, Board board) {
@@ -426,6 +435,7 @@ public class BoardGame extends Sprite {
 
     public void drawGame(Graphics g, BoardGame boardGame) {
         if (inGame) {
+            drawXiangqiBoard(g);
             Piece piece;
             String pieceSide;
             for (int row = 0; row < board.MAXROW; row++) {
