@@ -245,8 +245,8 @@ public class Sprite extends JPanel {
     }
 
     public void drawXiangqiBoard(Graphics g) {
-        Color boardColor = new Color(255, 205, 120);
-        Color lineColor = new Color(95, 55, 20);
+        Color boardColor = new Color(255, 226, 175);
+        Color lineColor = new Color(122, 54, 23);
         Font riverFont = new Font("Arial", Font.BOLD, 28);
 
         int left = getBoardOffsetX() + CELL_SIZE / 2;

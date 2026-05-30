@@ -10,7 +10,7 @@ import java.awt.event.MouseListener;
 import javax.swing.JButton;
 
 public class Screen extends Sprite implements ActionListener, MouseListener, KeyListener {
-    public final static Color BACK_GROUND_COLOR = new Color(255,205,120);
+    public final static Color BACK_GROUND_COLOR = new Color(255,226,175);
     public final static Color BLACK = Color.BLACK;
     public final static Color RED = new Color(153,0,0);
 
@@ -151,6 +151,7 @@ public class Screen extends Sprite implements ActionListener, MouseListener, Key
     public void mousePressed(MouseEvent e) {
         //Print location of x and y
         System.out.println("X: " + e.getX() + ", Y: " + e.getY());
+        boardGame.handleClick(e.getX(), e.getY());
         repaint();
     }
 
