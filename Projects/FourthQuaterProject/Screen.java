@@ -13,8 +13,10 @@ public class Screen extends Sprite implements ActionListener, MouseListener, Key
     public final static Color BACK_GROUND_COLOR = new Color(255,226,175);
     public final static Color BLACK = Color.BLACK;
     public final static Color RED = new Color(153,0,0);
+    public final static Color BOARD_LINE = new Color(122,54,23);
 
-    Font title = new Font("Arial", Font.BOLD, 36);
+    Font title = new Font("Arial", Font.BOLD, 48);
+    Font subtitle = new Font("Arial", Font.BOLD, 24);
     Font body = new Font("Arial", Font.PLAIN, 20);
 
     //buttons
@@ -67,6 +69,9 @@ public class Screen extends Sprite implements ActionListener, MouseListener, Key
 		JButton button = new JButton(text);
 		button.setBounds(x, y, width, height);
 		button.setFocusable(false);
+        button.setBackground(new Color(250, 224, 160));
+        button.setForeground(BOARD_LINE);
+        button.setFont(new Font("Arial", Font.BOLD, 16));
 		button.addActionListener(this);
 		add(button);
 		return button;
@@ -74,16 +79,15 @@ public class Screen extends Sprite implements ActionListener, MouseListener, Key
 
     public void drawMain(Graphics g) {
         if (!boardGame.getGameState()) { 
-            g.setColor(BACK_GROUND_COLOR);
-            g.fillRect(0, 0, 900, 700);
-            g.setColor(BLACK);
+            drawDecorativeBoard(g);
+            g.setColor(BOARD_LINE);
             g.setFont(title);
-            g.drawString("Welcome to Xiangqi!", 290, 200);
-            //draw Rules
-
+            drawCenteredString(g, "Chinese Chess", 150);
+            g.setFont(subtitle);
+            drawCenteredString(g, "Xiangqi", 195);
             g.setFont(body);
-            g.drawString("Rules:", 240, 250);
-
+            drawCenteredString(g, "Choose who moves first", 260);
+            g.drawString("F1: Exit current game", 350, 580);
             showMenuButtons();
         }
     }
@@ -95,21 +99,50 @@ public class Screen extends Sprite implements ActionListener, MouseListener, Key
 
     //using this for end game screen and implementing in drawGame for win condition in BoardGame
     public void drawEnd(Graphics g) {
+        drawDecorativeBoard(g);
+        g.setColor(BOARD_LINE);
+        g.setFont(title);
+
         if (boardGame.getWinStatus().equals("exited")) {
-            g.setColor(BACK_GROUND_COLOR);
-            g.fillRect(0, 0, 900, 700);
-            g.setColor(BLACK);
-            g.setFont(title);
-            g.drawString("Game Exited", 350, 350);
+            drawCenteredString(g, "Game Exited", 260);
+            g.setFont(body);
+            drawCenteredString(g, "Return to the menu to start a new match.", 320);
             showEndButtons();
             return;
         }
+
+        drawCenteredString(g, boardGame.getWinStatus() + "Wins", 250);
+        g.setFont(subtitle);
+        drawCenteredString(g, "General captured", 310);
+        g.setFont(body);
+        drawCenteredString(g, "Return to the menu to play again.", 360);
+        showEndButtons();
+    }
+
+    private void drawDecorativeBoard(Graphics g) {
         g.setColor(BACK_GROUND_COLOR);
         g.fillRect(0, 0, 900, 700);
-        g.setColor(BLACK);
-        g.setFont(title);
-        g.drawString(boardGame.getWinStatus() + "Wins", 350, 350);
-        showEndButtons();
+
+        g.setColor(new Color(250, 224, 160));
+        g.fillRoundRect(240, 95, 420, 455, 20, 20);
+        g.setColor(BOARD_LINE);
+        g.drawRoundRect(240, 95, 420, 455, 20, 20);
+
+        for (int i = 0; i < 7; i++) {
+            int x = 285 + i * 55;
+            g.drawLine(x, 135, x, 510);
+        }
+
+        for (int i = 0; i < 8; i++) {
+            int y = 135 + i * 50;
+            g.drawLine(285, y, 615, y);
+        }
+    }
+
+    private void drawCenteredString(Graphics g, String text, int y) {
+        java.awt.FontMetrics metrics = g.getFontMetrics();
+        int x = (900 - metrics.stringWidth(text)) / 2;
+        g.drawString(text, x, y);
     }
 
     //essentials

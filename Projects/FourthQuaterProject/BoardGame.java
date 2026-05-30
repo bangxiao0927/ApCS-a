@@ -6,6 +6,7 @@ import java.awt.Font;
 public class BoardGame extends Sprite {
     private String currentSide;
     private String winStatus = "";
+    private boolean gameOverSoundPlayed = false;
     private Piece selectedPiece;
     private ArrayList<Pos> selectedPaths = new ArrayList<Pos>();
 
@@ -360,6 +361,10 @@ public class BoardGame extends Sprite {
     }
 
     public void checkWinCondition(Board board) {
+        if (!winStatus.equals("")) {
+            return;
+        }
+
         // Implement the logic to check if either player has won the game
         // This typically involves checking if the opponent's General has been captured
         boolean redGeneralCaptured = true;
@@ -381,12 +386,21 @@ public class BoardGame extends Sprite {
 
         if (redGeneralCaptured) {
             winStatus = "Black ";
+            playWinningSoundOnce();
             updateInGame(false);
         } else if (blackGeneralCaptured) {
             winStatus = "Red ";
+            playWinningSoundOnce();
             updateInGame(false);
         } else {
             winStatus = "";
+        }
+    }
+
+    private void playWinningSoundOnce() {
+        if (!gameOverSoundPlayed) {
+            winningSound();
+            gameOverSoundPlayed = true;
         }
     }
 
@@ -509,7 +523,7 @@ public class BoardGame extends Sprite {
     public void drawGame(Graphics g, BoardGame boardGame) {
         if (inGame) {
             drawXiangqiBoard(g);
-            drawSelectedPaths(g);
+            drawSelectedPieceHighlight(g);
             Piece piece;
             String pieceSide;
             for (int row = 0; row < board.MAXROW; row++) {
@@ -521,12 +535,13 @@ public class BoardGame extends Sprite {
                     }
                 }
             }
+            drawSelectedPaths(g);
         
             checkWinCondition(board);
         }
     }
 
-    private void drawSelectedPaths(Graphics g) {
+    private void drawSelectedPieceHighlight(Graphics g) {
         int cellSize = getCellSize();
 
         if (selectedPiece != null) {
@@ -537,12 +552,24 @@ public class BoardGame extends Sprite {
             g.setColor(new Color(255, 245, 120));
             g.fillOval(x + 7, y + 7, cellSize - 14, cellSize - 14);
         }
+    }
 
-        g.setColor(new Color(60, 120, 70));
+    private void drawSelectedPaths(Graphics g) {
+        int cellSize = getCellSize();
+
         for (Pos pos : selectedPaths) {
-            int x = getBoardOffsetX() + pos.getCol() * cellSize + cellSize / 2 - 6;
-            int y = getBoardOffsetY() + pos.getRow() * cellSize + cellSize / 2 - 6;
-            g.fillOval(x, y, 12, 12);
+            Piece target = board.getPiece(pos.getRow(), pos.getCol());
+            int x = getBoardOffsetX() + pos.getCol() * cellSize;
+            int y = getBoardOffsetY() + pos.getRow() * cellSize;
+
+            if (target == null) {
+                g.setColor(new Color(60, 120, 70));
+                g.fillOval(x + cellSize / 2 - 6, y + cellSize / 2 - 6, 12, 12);
+            } else if (selectedPiece != null && !target.getSide().equals(selectedPiece.getSide())) {
+                g.setColor(new Color(190, 35, 25));
+                g.drawOval(x + 8, y + 8, cellSize - 16, cellSize - 16);
+                g.drawOval(x + 9, y + 9, cellSize - 18, cellSize - 18);
+            }
         }
     }
 
