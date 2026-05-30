@@ -27,6 +27,7 @@ public class Screen extends Sprite implements ActionListener, MouseListener, Key
     private BoardGame boardGame = new BoardGame("red");
     public Screen() {
         setLayout(null);
+        setBackground(BACK_GROUND_COLOR);
         addMouseListener(this);
         addKeyListener(this);
 
@@ -48,11 +49,13 @@ public class Screen extends Sprite implements ActionListener, MouseListener, Key
     public void paintComponent(Graphics g){
 		super.paintComponent(g);
 
+        g.setColor(BACK_GROUND_COLOR);
+        g.fillRect(0, 0, getWidth(), getHeight());
 
         if (boardGame.getGameState()) {
             drawGameScreen(g, boardGame);
         } else {
-            if (boardGame.getWinStatus().equals("exited")) {
+            if (!boardGame.getWinStatus().equals("")) {
                 drawEnd(g);
             } else {
                 drawMain(g);
@@ -105,7 +108,7 @@ public class Screen extends Sprite implements ActionListener, MouseListener, Key
         g.fillRect(0, 0, 900, 700);
         g.setColor(BLACK);
         g.setFont(title);
-        g.drawString(boardGame.getWinStatus() + "WINS", 290, 200);
+        g.drawString(boardGame.getWinStatus() + "Wins", 350, 350);
         showEndButtons();
     }
 

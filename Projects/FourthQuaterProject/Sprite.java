@@ -257,7 +257,7 @@ public class Sprite extends JPanel {
         int riverBottom = top + 5 * CELL_SIZE;
 
         g.setColor(boardColor);
-        g.fillRect(0, 0, getWidth(), getHeight());
+        g.fillRect(0, 0, 900, 700);
 
         g.setColor(lineColor);
         for (int row = 0; row < maxRow; row++) {
