@@ -6,6 +6,13 @@ import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.SourceDataLine;
 
 public class Sprite extends JPanel {
     public static int maxRow = 10;
@@ -16,17 +23,20 @@ public class Sprite extends JPanel {
     private static final int CELL_SIZE = 60;
     private static final int ANIMATION_STEPS = 12;
     private static final int ANIMATION_DELAY = 15;
+    private static final float SAMPLE_RATE = 44100.0f;
+    private static final String[] APPLAUSE_SOUND_FILES = {
+        "applause.wav",
+        "plause.wav",
+        "Projects/FourthQuaterProject/applause.wav",
+        "Projects/FourthQuaterProject/plause.wav"
+    };
 
     public int row;
     public int col;
     public String side;
     public String pieceType;
     public boolean visible;
-    public boolean movingSoundEffect;
-    public boolean winningSoundEffect;
     public boolean redTeam;
-    public boolean movingSoundOn;
-    public boolean winningSoundOn;
     public boolean captured;
     public boolean animating;
     public int drawX;
@@ -38,11 +48,7 @@ public class Sprite extends JPanel {
         side = "";
         pieceType = "";
         visible = true;
-        movingSoundEffect = false;
-        winningSoundEffect = false;
         redTeam = true;
-        movingSoundOn = false;
-        winningSoundOn = false;
         captured = false;
         animating = false;
         drawX = col * CELL_SIZE;
@@ -55,11 +61,7 @@ public class Sprite extends JPanel {
         side = startSide;
         pieceType = startPieceType;
         visible = true;
-        movingSoundEffect = false;
-        winningSoundEffect = false;
         redTeam = side.equals("red");
-        movingSoundOn = false;
-        winningSoundOn = false;
         captured = false;
         animating = false;
         drawX = col * CELL_SIZE;
@@ -139,12 +141,10 @@ public class Sprite extends JPanel {
     }
 
     public void movingAnimation(int newRow, int newCol) {
-        if (!canDisplace(newRow, newCol)) {
+        if (animating || !canDisplace(newRow, newCol)) {
             return;
         }
 
-        final int startRow = row;
-        final int startCol = col;
         final int startX = drawX;
         final int startY = drawY;
         final int endX = newCol * CELL_SIZE;
@@ -166,8 +166,6 @@ public class Sprite extends JPanel {
                 if (step >= ANIMATION_STEPS) {
                     timer.stop();
                     animating = false;
-                    row = startRow;
-                    col = startCol;
                     displace(newRow, newCol, true);
                     drawX = endX;
                     drawY = endY;
@@ -182,24 +180,8 @@ public class Sprite extends JPanel {
         movingAnimation(newRow, newCol);
     }
 
-    public void movingSound() {
-        movingSoundEffect = true;
-        movingSoundOn = true;
-        Toolkit.getDefaultToolkit().beep();
-    }
-
-    public void playMovingSound() {
-        movingSound();
-    }
-
     public void winningSound() {
-        winningSoundEffect = true;
-        winningSoundOn = true;
-        Toolkit.getDefaultToolkit().beep();
-    }
-
-    public void playWinningSound() {
-        winningSound();
+        playApplauseSound();
     }
 
     public boolean ruleDisplace(int newRow, int newCol) {
@@ -212,10 +194,12 @@ public class Sprite extends JPanel {
         }
 
         Sprite target = xiangqiBoard[newRow][newCol];
+        boolean capturedGeneral = false;
         if (target != null) {
             if (target.side.equals(side)) {
                 return false;
             }
+            capturedGeneral = isGeneral(target);
             capture(target);
         }
 
@@ -228,8 +212,8 @@ public class Sprite extends JPanel {
         xiangqiBoard[row][col] = this;
         drawX = col * CELL_SIZE;
         drawY = row * CELL_SIZE;
-        if (playSound) {
-            movingSound();
+        if (playSound && !capturedGeneral) {
+            Toolkit.getDefaultToolkit().beep();
         }
         return true;
     }
@@ -320,4 +304,114 @@ public class Sprite extends JPanel {
                 || piece.pieceType.equalsIgnoreCase("general")
                 || piece.pieceType.equalsIgnoreCase("king"));
     }
+
+    private void playApplauseSound() {
+        Thread soundThread = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    File applauseFile = findApplauseSoundFile();
+                    if (applauseFile != null) {
+                        playAudioFile(applauseFile);
+                    } else {
+                        playGeneratedApplause();
+                    }
+                } catch (Exception e) {
+                    Toolkit.getDefaultToolkit().beep();
+                }
+            }
+        });
+        soundThread.setDaemon(true);
+        soundThread.start();
+    }
+
+    private File findApplauseSoundFile() {
+        for (String fileName : APPLAUSE_SOUND_FILES) {
+            File file = new File(fileName);
+            if (file.exists() && file.isFile()) {
+                return file;
+            }
+        }
+        return null;
+    }
+
+    private void playAudioFile(File soundFile) throws Exception {
+        AudioInputStream stream = AudioSystem.getAudioInputStream(soundFile);
+        Clip clip = AudioSystem.getClip();
+        clip.open(stream);
+        clip.start();
+        Thread.sleep(Math.max(1, clip.getMicrosecondLength() / 1000));
+        clip.close();
+        stream.close();
+    }
+
+    private void playGeneratedApplause() throws LineUnavailableException, InterruptedException {
+        AudioFormat format = new AudioFormat(SAMPLE_RATE, 8, 1, true, true);
+        SourceDataLine line = AudioSystem.getSourceDataLine(format);
+        line.open(format);
+        line.start();
+
+        for (int clap = 0; clap < 26; clap++) {
+            playClap(line, 45 + (int) (Math.random() * 35), 0.75 + Math.random() * 0.25);
+            Thread.sleep(12 + (int) (Math.random() * 45));
+        }
+
+        playCrowdTail(line, 420);
+        line.drain();
+        line.stop();
+        line.close();
+    }
+
+    private void playClap(SourceDataLine line, int milliseconds, double volume) {
+        int length = (int) (SAMPLE_RATE * milliseconds / 1000);
+        byte[] data = new byte[length];
+        double last = 0.0;
+        double previous = 0.0;
+
+        for (int i = 0; i < data.length; i++) {
+            double progress = (double) i / data.length;
+            double attack = Math.min(1.0, progress * 16.0);
+            double decay = Math.pow(1.0 - progress, 2.2);
+            double envelope = attack * decay;
+            double noise = Math.random() * 2.0 - 1.0;
+
+            last = last * 0.45 + noise * 0.55;
+            double filtered = last - previous * 0.35;
+            previous = last;
+
+            if (i < 80) {
+                filtered += (Math.random() * 2.0 - 1.0) * 0.9;
+            }
+
+            data[i] = clipToByte(filtered * 120.0 * envelope * volume);
+        }
+
+        line.write(data, 0, data.length);
+    }
+
+    private void playCrowdTail(SourceDataLine line, int milliseconds) {
+        int length = (int) (SAMPLE_RATE * milliseconds / 1000);
+        byte[] data = new byte[length];
+        double last = 0.0;
+
+        for (int i = 0; i < data.length; i++) {
+            double progress = (double) i / data.length;
+            double envelope = Math.pow(1.0 - progress, 1.6) * 0.32;
+            double noise = Math.random() * 2.0 - 1.0;
+            last = last * 0.72 + noise * 0.28;
+            data[i] = clipToByte(last * 80.0 * envelope);
+        }
+
+        line.write(data, 0, data.length);
+    }
+
+    private byte clipToByte(double value) {
+        if (value > 127.0) {
+            return 127;
+        }
+        if (value < -128.0) {
+            return -128;
+        }
+        return (byte) value;
+    }
+
 }

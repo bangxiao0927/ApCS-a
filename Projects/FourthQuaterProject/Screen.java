@@ -111,7 +111,9 @@ public class Screen extends Sprite implements ActionListener, MouseListener, Key
             return;
         }
 
+        g.setColor(RED);
         drawCenteredString(g, boardGame.getWinStatus() + "Wins", 250);
+        g.setColor(BOARD_LINE);
         g.setFont(subtitle);
         drawCenteredString(g, "General captured", 310);
         g.setFont(body);

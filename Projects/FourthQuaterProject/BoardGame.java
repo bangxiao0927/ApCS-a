@@ -307,6 +307,7 @@ public class BoardGame extends Sprite {
             }
             // Move the piece to the new position
             board.movePiece(board.getPieceRow(piece), board.getPieceCol(piece), newPos.getRow(), newPos.getCol());
+            java.awt.Toolkit.getDefaultToolkit().beep();
             selectedPiece = null;
             selectedPaths.clear();
             updateTurn();
@@ -590,6 +591,9 @@ public class BoardGame extends Sprite {
     }
 
     public void setForceQuit() {
+        if (inGame && winStatus.equals("")) {
+            playWinningSoundOnce();
+        }
         winStatus = "exited";
         updateInGame(false);
     }
