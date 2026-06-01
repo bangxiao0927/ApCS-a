@@ -9,6 +9,12 @@ public class BoardGame extends Sprite {
     private boolean gameOverSoundPlayed = false;
     private Piece selectedPiece;
     private ArrayList<Pos> selectedPaths = new ArrayList<Pos>();
+    private Piece movingPiece;
+    private Piece movingCapturedPiece;
+    private Pos movingTo;
+    private int movingDrawX;
+    private int movingDrawY;
+    private boolean moveAnimating = false;
 
     private ArrayList<Piece> redPieces = new ArrayList<Piece>();
     private ArrayList<Piece> blackPieces = new ArrayList<Piece>();
@@ -271,11 +277,16 @@ public class BoardGame extends Sprite {
     }
 
     public void graphicsPieces(String pieceSide , String piece , Graphics g, int row, int col) {
-        Color color = (pieceSide.equals("red")) ? new Color(222, 26, 26) : new Color(0, 0, 0);
-        Font body = new Font("Arial", Font.PLAIN, 20);
         int cellSize = getCellSize();
         int x = getBoardOffsetX() + col * cellSize;
         int y = getBoardOffsetY() + row * cellSize;
+        drawPieceAt(g, pieceSide, piece, x, y);
+    }
+
+    private void drawPieceAt(Graphics g, String pieceSide, String piece, int x, int y) {
+        Color color = (pieceSide.equals("red")) ? new Color(222, 26, 26) : new Color(0, 0, 0);
+        Font body = new Font("Arial", Font.PLAIN, 20);
+        int cellSize = getCellSize();
         g.setColor(new Color(250, 224, 160));
         g.fillOval(x + 3, y + 3, cellSize - 6, cellSize - 6);
         g.setColor(color);
@@ -315,7 +326,14 @@ public class BoardGame extends Sprite {
     }
 
     public void handleClick(int mouseX, int mouseY) {
+        handleClick(mouseX, mouseY, null);
+    }
+
+    public void handleClick(int mouseX, int mouseY, javax.swing.JPanel screen) {
         if (!inGame) {
+            return;
+        }
+        if (moveAnimating) {
             return;
         }
 
@@ -350,8 +368,7 @@ public class BoardGame extends Sprite {
         if (selectedPiece != null) {
             for (Pos pos : selectedPaths) {
                 if (pos.getRow() == row && pos.getCol() == col) {
-                    movePiece(selectedPiece, pos, board);
-                    checkWinCondition(board);
+                    movePieceWithAnimation(selectedPiece, pos, screen);
                     return;
                 }
             }
@@ -359,6 +376,93 @@ public class BoardGame extends Sprite {
 
         selectedPiece = null;
         selectedPaths.clear();
+    }
+
+    private void movePieceWithAnimation(Piece piece, Pos newPos, javax.swing.JPanel screen) {
+        ArrayList<Pos> validPaths = returnPaths(piece, board);
+        boolean isValidMove = false;
+        for (Pos pos : validPaths) {
+            if (pos.getRow() == newPos.getRow() && pos.getCol() == newPos.getCol()) {
+                isValidMove = true;
+                break;
+            }
+        }
+        if (!isValidMove) {
+            return;
+        }
+
+        int fromRow = board.getPieceRow(piece);
+        int fromCol = board.getPieceCol(piece);
+        Piece capturedPiece = board.getPiece(newPos.getRow(), newPos.getCol());
+
+        movingPiece = piece;
+        movingCapturedPiece = capturedPiece;
+        movingTo = newPos;
+        movingDrawX = getBoardOffsetX() + fromCol * getCellSize();
+        movingDrawY = getBoardOffsetY() + fromRow * getCellSize();
+        moveAnimating = true;
+        selectedPiece = null;
+        selectedPaths.clear();
+
+        board.board[fromRow][fromCol] = null;
+        if (capturedPiece != null) {
+            board.board[newPos.getRow()][newPos.getCol()] = null;
+        }
+
+        final int startX = movingDrawX;
+        final int startY = movingDrawY;
+        final int endX = getBoardOffsetX() + newPos.getCol() * getCellSize();
+        final int endY = getBoardOffsetY() + newPos.getRow() * getCellSize();
+        javax.swing.Timer timer = new javax.swing.Timer(18, null);
+        timer.addActionListener(new java.awt.event.ActionListener() {
+            private int step = 0;
+            private final int totalSteps = 14;
+
+            public void actionPerformed(java.awt.event.ActionEvent event) {
+                step++;
+                double percent = (double) step / totalSteps;
+                movingDrawX = startX + (int) Math.round((endX - startX) * percent);
+                movingDrawY = startY + (int) Math.round((endY - startY) * percent);
+                repaintBoard(screen);
+
+                if (step >= totalSteps) {
+                    timer.stop();
+                    finishAnimatedMove(screen);
+                }
+            }
+        });
+        timer.start();
+    }
+
+    private void finishAnimatedMove(javax.swing.JPanel screen) {
+        if (movingPiece == null || movingTo == null) {
+            moveAnimating = false;
+            return;
+        }
+
+        if (movingCapturedPiece != null) {
+            if (movingCapturedPiece.getSide().equals("red")) {
+                redPieces.remove(movingCapturedPiece);
+            } else {
+                blackPieces.remove(movingCapturedPiece);
+            }
+        }
+
+        board.board[movingTo.getRow()][movingTo.getCol()] = movingPiece;
+        java.awt.Toolkit.getDefaultToolkit().beep();
+        movingPiece = null;
+        movingCapturedPiece = null;
+        movingTo = null;
+        moveAnimating = false;
+        updateTurn();
+        checkWinCondition(board);
+        repaintBoard(screen);
+    }
+
+    private void repaintBoard(javax.swing.JPanel screen) {
+        if (screen != null) {
+            screen.repaint();
+        }
     }
 
     public void checkWinCondition(Board board) {
@@ -536,9 +640,18 @@ public class BoardGame extends Sprite {
                     }
                 }
             }
+            drawMovingPiece(g);
             drawSelectedPaths(g);
         
-            checkWinCondition(board);
+            if (!moveAnimating) {
+                checkWinCondition(board);
+            }
+        }
+    }
+
+    private void drawMovingPiece(Graphics g) {
+        if (moveAnimating && movingPiece != null) {
+            drawPieceAt(g, movingPiece.getSide(), movingPiece.getType(), movingDrawX, movingDrawY);
         }
     }
 

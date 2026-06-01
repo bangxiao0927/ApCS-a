@@ -189,7 +189,7 @@ public class Screen extends Sprite implements ActionListener, MouseListener, Key
     public void mousePressed(MouseEvent e) {
         //Print location of x and y
         System.out.println("X: " + e.getX() + ", Y: " + e.getY());
-        boardGame.handleClick(e.getX(), e.getY());
+        boardGame.handleClick(e.getX(), e.getY(), this);
         repaint();
     }
 
