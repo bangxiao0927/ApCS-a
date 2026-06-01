@@ -642,6 +642,7 @@ public class BoardGame extends Sprite {
             }
             drawMovingPiece(g);
             drawSelectedPaths(g);
+            drawPlayingInstructions(g);
         
             if (!moveAnimating) {
                 checkWinCondition(board);
@@ -653,6 +654,26 @@ public class BoardGame extends Sprite {
         if (moveAnimating && movingPiece != null) {
             drawPieceAt(g, movingPiece.getSide(), movingPiece.getType(), movingDrawX, movingDrawY);
         }
+    }
+
+    private void drawPlayingInstructions(Graphics g) {
+        int x = getBoardOffsetX() + board.MAXCOL * getCellSize() + 5;
+        int y = 95;
+
+        g.setColor(new Color(122, 54, 23));
+        g.setFont(new Font("Arial", Font.BOLD, 16));
+        g.drawString("How to Play", x, y);
+
+        g.setFont(new Font("Arial", Font.PLAIN, 12));
+        g.drawString("1. Click piece", x, y + 28);
+        g.drawString("2. Green = move", x, y + 48);
+        g.drawString("3. Red = capture", x, y + 68);
+        g.drawString("(middle bottom one)", x, y + 88);
+        g.drawString("4. Capture general", x, y + 108);
+        g.drawString("5. F1 to exit", x, y + 128);
+
+        g.setFont(new Font("Arial", Font.BOLD, 13));
+        g.drawString("Turn: " + currentSide, x, y + 165);
     }
 
     private void drawSelectedPieceHighlight(Graphics g) {
