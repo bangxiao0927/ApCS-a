@@ -1,7 +1,7 @@
 AP Computer Science A Workspace
 ================================
 
-This repository collects my daily practice, labs, and long-form projects for AP CSA.  It is meant as a personal study log and a communication channel with collaborators or instructors.
+This repository collects my daily practice, labs, and long-form projects for AP CSA.  It is archived as a personal study log and reference snapshot.
 
 Ethics & Usage
 --------------
@@ -10,7 +10,7 @@ Ethics & Usage
 
 Repository Map
 --------------
-- `2508/` … `2512/`, `2601/`: dated folders that mirror the class calendar (e.g., `2509/0915` contains exercises from September 15).  Use these to track progress or revisit topic-specific practice.
+- `2508/` … `2512/`, `2601/` … `2605/`: dated folders that mirror the class calendar (e.g., `2509/0915` contains exercises from September 15).  Use these to track progress or revisit topic-specific practice.
 - `Labs/`: official lab assignments such as `Bang_Xiao_Number_Slots_Lab` and `Bang_Xiao_TriviaLab` organized by lab title.
 - `Projects/`: larger deliverables (First Quarter, Second Quarter, etc.) that aggregate multiple classes of work.
 - `2512/read.md`: journal-style notes for December sessions.
